@@ -1,8 +1,9 @@
 import os
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    API_KEY_GIGACODE: str = ""
+    API_KEY_GIGACODE: str = Field("", validation_alias="GIGACODE")
     LLM_API_BASE: str = "https://llm.franciscodanconia.ru:8448/v1"
     
     class Config:

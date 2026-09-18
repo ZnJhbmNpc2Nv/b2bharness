@@ -17,6 +17,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Загружаем актуальное состояние из файла, чтобы избежать проблем с reload
+def get_current_stage():
+    import json
+    import os
+    try:
+        if os.path.exists("data/approval.json"):
+            with open("data/approval.json", "r") as f:
+                data = json.load(f)
+                return data.get("approval_state", {}).get("current_stage", "UNKNOWN")
+    except Exception:
+        pass
+    return "UNKNOWN"
+
 engine = PipelineEngine()
 
 class ApiKeyRequest(BaseModel):
