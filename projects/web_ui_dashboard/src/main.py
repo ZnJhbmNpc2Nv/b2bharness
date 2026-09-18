@@ -25,7 +25,7 @@ class ApiKeyRequest(BaseModel):
 
 @app.get("/status")
 async def get_status():
-    return {"stage": engine.state.name}
+    return {"stage": get_current_stage()}
 
 @app.get("/health")
 async def health():
