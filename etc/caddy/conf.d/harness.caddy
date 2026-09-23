@@ -1,0 +1,10 @@
+harness.franciscodanconia.ru {
+    root * /opt/b2bharness/frontend/dist
+    file_server
+
+    reverse_proxy /api/* localhost:8000
+    reverse_proxy /health localhost:8000
+    reverse_proxy /pipeline/* localhost:8000
+    reverse_proxy /config/* localhost:8000
+    reverse_proxy /security/* localhost:8000
+}
