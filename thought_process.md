@@ -1,10 +1,12 @@
 # B2B-Harness: Strategy and Future Steps
 
-## Current Status (as of 2026-09-01)
-- Core Pipeline System implemented using Spec-Kit methodology.
-- SQLite-based Audit Engine and Artifact Store operational.
-- Pipeline state machine functional with manual approval gates.
-- Log-Analyzer MCP demo module successfully implemented and tested (SDD path: Intent -> Spec -> Plan -> Dev -> Test).
+## Status Update (2026-09-19)
+- **UI/UX**: Панель управления (Dashboard) полностью интегрирована с бэкендом. Реализована авторизация через API-токен с флагом активности.
+- **Pipeline Integration**: Реализован сквозной цикл от получения интента (через LLM-шлюз) до утверждения этапа (`approve_and_advance`). E2E-тесты подтверждают стабильность работы API.
+- **Infrastructure**: Бэкенд переведен на порт 8001, Caddy настроен на HTTPS (Let's Encrypt), конфликты с Docker (Marzban) разрешены.
+- **Next Steps**: 
+    - Активация автоматической генерации `discovery.md` через `AgentOrchestrator` при переходе в `INTENT`.
+    - Реализация `LogConsole` в UI для мониторинга выполнения планов агентом в реальном времени.
 
 ## Strategic Options for Next Phase
 1. **Agent Orchestrator (Autonomous SDD-DEV)**: 

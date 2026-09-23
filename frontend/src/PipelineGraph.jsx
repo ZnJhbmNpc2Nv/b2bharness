@@ -7,7 +7,7 @@ const PipelineGraph = () => {
   const [nodes, setNodes] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/pipeline/graph').then(res => {
+    axios.get('/api/pipeline/graph').then(res => {
       const { nodes: nodeNames, current } = res.data;
       const initialNodes = nodeNames.map((name, index) => ({
         id: name,
