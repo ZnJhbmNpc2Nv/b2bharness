@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         extra = "ignore"
+        extra = "ignore"
 
 def save_env_key(key_name: str, value: str):
     # Убедимся, что записываем в .env в корневой директории проекта

@@ -1,0 +1,4 @@
+Host github.com-b2bharness
+    HostName github.com
+    User git
+    IdentityFile D:\b2bharness\id_ed25519_b2bharness

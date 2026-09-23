@@ -1,0 +1,20 @@
+# B2B Harness Configuration (Spec Kit-based)
+
+pipeline:
+  stages:
+    - pre_sdd
+    - intent
+    - spec
+    - plan
+    - dev
+    - post_sdd
+    - ab_test
+
+requirements_db:
+  provider: sqlite
+  sync_source: .specify/requirements/
+  auto_sync: true
+
+security_standards:
+  - OWASP_ASVS_L2
+  - CWE_TOP_25

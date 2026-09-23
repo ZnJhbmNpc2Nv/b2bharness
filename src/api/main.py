@@ -42,6 +42,21 @@ async def invoke_command(command: str):
     logger.log("SPECKIT", f"Invoked {command}")
     return {"status": "success", "command": SPECKIT_COMMANDS[command]}
 
+@app.get("/pipeline/graph")
+async def get_graph():
+    return {
+        "nodes": [state.name for state in PipelineState],
+        "current": engine.state.name
+    }
+
+@app.get("/pipeline/artifacts/{session_id}/{artifact_type}")
+async def get_artifact(session_id: str, artifact_type: str):
+    path = f"data/staging/{session_id}/{artifact_type}.md"
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    with open(path, "r") as f:
+        return {"content": f.read()}
+
 @app.post("/pipeline/execute")
 async def execute(module_name: str, session_id: str = Header(...), user_id: str = Header(...)):
     success, message = orchestrator.execute_plan(module_name, session_id, user_id)
@@ -92,3 +107,54 @@ async def validate_dev(spec_file: str):
         
     logger.log("VALIDATION", f"Validating consistency against {spec_file}")
     return {"status": "validated", "consistent": True}
+
+from pydantic import BaseModel
+
+# Импортируем наш LLMClient
+from src.api.llm_client import LLMClient
+
+import time
+
+llm_client = LLMClient()
+
+class IntentPayload(BaseModel):
+    text: str
+
+@app.post("/pipeline/refine-intent")
+async def refine_intent(payload: IntentPayload):
+    raw_text = payload.text
+    
+    messages = [
+        {"role": "system", "content": "You are a pipeline assistant. Refine the user intent into structured, unambiguous requirements."},
+        {"role": "user", "content": f"Refine this intent: {raw_text}"}
+    ]
+    
+    response = await llm_client.chat_completion(messages)
+    refined = response.get('choices', [{}])[0].get('message', {}).get('content', 'Refinement failed')
+    
+    return {"status": "refined", "refined_text": refined}
+
+
+@app.post("/config/keys")
+async def save_key(data: dict):
+    os.makedirs("data", exist_ok=True)
+    with open("data/keys.json", "w") as f:
+        json.dump({"key": data.get("value"), "active": True, "added_at": time.time()}, f)
+    return {"status": "success"}
+
+@app.delete("/config/keys")
+async def clear_key():
+    if os.path.exists("data/keys.json"):
+        os.remove("data/keys.json")
+    return {"status": "cleared"}
+
+@app.get("/config/status")
+async def get_key_status():
+    if not os.path.exists("data/keys.json"):
+        return {"active": False}
+    with open("data/keys.json", "r") as f:
+        data = json.load(f)
+    return {"active": data.get("active", False)}
+
+
+

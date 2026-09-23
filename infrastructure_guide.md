@@ -13,7 +13,7 @@
 - **Environment Isolation:** Code execution (Caddy, FastAPI, Orchestrator) relies on Linux-specific system services (systemd, journalctl) and networking (DNS/TLS) that cannot be accurately replicated on the local Windows workstation.
 - **Workflow:** Local workstation is for development/builds; the server is for integration and execution. Always verify state directly on the server.
 
-## Troubleshooting & Patterns
-- **SSL/TLS:** Using `tls internal` in Caddy for now due to Let's Encrypt rate limits.
-- **API Issues:** Always verify `main.py` endpoints against frontend requirements. If UI hits "Loading...", check `/status` and `/health`.
-- **Pipeline:** Status transitions are managed via `AgentOrchestrator` and `approval.json`. Manual overrides via `curl -X POST` are acceptable for MVP debugging.
+## Deployment Updates (2026-09-19)
+- **Backend Port**: Переведен с 8000 на 8001 для предотвращения конфликтов с другими сервисами (Marzban).
+- **HTTPS**: Настроено автоматическое получение SSL-сертификатов через Let's Encrypt (Caddy).
+- **Frontend Proxy**: Caddy настроен на проксирование `/api/*` запросов на локальный порт 8001 с использованием `handle_path` для корректной маршрутизации.

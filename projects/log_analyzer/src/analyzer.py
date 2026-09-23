@@ -9,7 +9,7 @@ class LogAnalyzer:
         with open(file_path, "r") as f:
             content = f.read()
             
-        errors = re.findall(r"(ERROR|CRITICAL):.*", content)
+        errors = re.findall(r"(ERROR:.*|CRITICAL:.*)", content)
         return {
             "count": len(errors),
             "errors": errors,
