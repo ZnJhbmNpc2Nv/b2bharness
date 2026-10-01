@@ -146,15 +146,19 @@ class LLMClient:
                     )
                     if response.status_code == 200:
                         return response.json()
-                    elif response.status_code in (401, 403):
+                    elif response.status_code == 401:
+                        # 401 is bad API key
                         response.raise_for_status()
                     else:
                         logger.warning(f"Model {m_name} returned status {response.status_code}: {response.text}")
-                        last_exception = Exception(f"HTTP {response.status_code}: {response.text}")
-            except httpx.HTTPStatusError:
-                raise
+                        last_exception = Exception(f"HTTP {response.status_code} ({m_name}): {response.text}")
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 401:
+                    raise
+                logger.warning(f"Model {m_name} failed with status {e.response.status_code}, trying fallback...")
+                last_exception = e
             except Exception as e:
-                logger.warning(f"Error calling model {m_name}: {str(e)}")
+                logger.warning(f"Error calling model {m_name}: {str(e)}, trying fallback...")
                 last_exception = e
 
         if last_exception:
