@@ -6,17 +6,40 @@ from typing import List, Dict, Any, Optional, AsyncGenerator
 
 logger = logging.getLogger("b2bharness.llm")
 
-# Canonical Role-to-Model mappings for B2B SDD Swarm
+# Canonical EuroModels Catalog & Role Mappings for B2B SDD Swarm
+EUROMODELS_CATALOG = {
+    "claude-sonnet-5": "Основной кодинг и архитектура",
+    "claude-3.7-sonnet": "Сложные алгоритмы, математика и логика",
+    "gemini-3.7-flash": "Мгновенный ресерч, логи, документация",
+    "gemini-2.0-flash": "Быстрый чат и универсальные задачи",
+    "qwen-3.8-max": "Бэкенд, SQL, базы данных, JSON, парсеры",
+    "kimi-k3": "Глубокое код-ревью и аудит безопасности",
+    "kimi-k2.6": "Быстрый анализ длинных текстов",
+    "gpt-6-astra": "Системное проектирование",
+    "claude-opus-5.5": "Тяжелые точечные задачи"
+}
+
 ROLE_MODELS = {
-    "architect": "claude-opus-5.5",
+    "architect": "gpt-6-astra",
     "coder": "claude-sonnet-5",
     "tester": "gemini-3.7-flash",
     "auditor": "kimi-k3",
-    "reviewer": "claude-sonnet-5",
+    "reviewer": "kimi-k3",
+    "backend": "qwen-3.8-max",
+    "research": "gemini-3.7-flash",
     "default": "claude-sonnet-5"
 }
 
-FALLBACK_MODELS = ["claude-sonnet-5", "claude-3.7-sonnet", "qwen-3.8-max", "gemini-3.7-flash"]
+FALLBACK_MODELS = [
+    "claude-sonnet-5",
+    "claude-3.7-sonnet",
+    "gemini-3.7-flash",
+    "gemini-2.0-flash",
+    "qwen-3.8-max",
+    "kimi-k3",
+    "gpt-6-astra",
+    "claude-opus-5.5"
+]
 
 class LLMClient:
     def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None):

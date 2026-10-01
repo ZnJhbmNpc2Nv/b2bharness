@@ -20,8 +20,8 @@ function App() {
   const [artifacts, setArtifacts] = useState({});
   const [statusText, setStatusText] = useState('Готов к запуску');
   const [models, setModels] = useState({
-    architect: 'claude-opus-5.5',
-    tester: 'gemini-3.7-pro',
+    architect: 'gpt-6-astra',
+    tester: 'gemini-3.7-flash',
     coder: 'claude-sonnet-5',
     auditor: 'kimi-k3'
   });
@@ -181,37 +181,43 @@ function App() {
         {/* Model Matrix */}
         <div style={{ background: 'rgba(13, 19, 33, 0.85)', border: '1px solid rgba(45, 60, 95, 0.4)', borderRadius: '12px', padding: '14px 20px', marginBottom: '18px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#c084fc' }}>Динамическая Матрица Моделей (Pipeline Roles):</span>
-            <span style={{ fontSize: '11px', color: '#8492a6' }}>Без DeepSeek R1 • Авто-синхронизация</span>
+            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#c084fc' }}>Динамическая Матрица Моделей (EuroModels Suite):</span>
+            <span style={{ fontSize: '11px', color: '#8492a6' }}>9 моделей • Ролевая авто-синхронизация</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
             <div>
               <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>1. Spec Architect:</label>
               <select value={models.architect} onChange={e => setModels({ ...models, architect: e.target.value })} style={{ width: '100%', background: '#090e1a', border: '1px solid #475569', borderRadius: '6px', padding: '7px', color: '#fff', fontSize: '12px' }}>
-                <option value="claude-opus-5.5">Claude Opus 5.5</option>
-                <option value="claude-sonnet-5">Claude Sonnet 5</option>
-                <option value="kimi-k3">Kimi K3</option>
+                <option value="gpt-6-astra">GPT-6 Astra (Системное проектирование)</option>
+                <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелые задачи)</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5 (Основной кодинг)</option>
+                <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (Сложные алгоритмы)</option>
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>2. TDD Synthesizer:</label>
+              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>2. TDD Synthesizer / Research:</label>
               <select value={models.tester} onChange={e => setModels({ ...models, tester: e.target.value })} style={{ width: '100%', background: '#090e1a', border: '1px solid #475569', borderRadius: '6px', padding: '7px', color: '#fff', fontSize: '12px' }}>
-                <option value="gemini-3.7-pro">Gemini 3.7 Pro</option>
-                <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                <option value="gemini-3.7-flash">Gemini 3.7 Flash (Мгновенный ресерч/тесты)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Быстрый чат/универсальный)</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5 (Основной кодинг)</option>
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>3. Lead Coder:</label>
+              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>3. Lead Coder & Backend:</label>
               <select value={models.coder} onChange={e => setModels({ ...models, coder: e.target.value })} style={{ width: '100%', background: '#090e1a', border: '1px solid #475569', borderRadius: '6px', padding: '7px', color: '#fff', fontSize: '12px' }}>
-                <option value="claude-sonnet-5">Claude Sonnet 5</option>
-                <option value="claude-opus-5.5">Claude Opus 5.5</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5 (Основной кодинг)</option>
+                <option value="qwen-3.8-max">Qwen 3.8 Max (Бэкенд, SQL, БД, парсеры)</option>
+                <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (Алгоритмы и логика)</option>
+                <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелые задачи)</option>
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>4. Security Auditor:</label>
+              <label style={{ fontSize: '11px', color: '#8492a6', display: 'block', marginBottom: '4px' }}>4. Security Auditor & Review:</label>
               <select value={models.auditor} onChange={e => setModels({ ...models, auditor: e.target.value })} style={{ width: '100%', background: '#090e1a', border: '1px solid #475569', borderRadius: '6px', padding: '7px', color: '#fff', fontSize: '12px' }}>
-                <option value="kimi-k3">Kimi K3</option>
-                <option value="claude-opus-5.5">Claude Opus 5.5</option>
+                <option value="kimi-k3">Kimi K3 (Глубокое код-ревью и безопасность)</option>
+                <option value="kimi-k2.6">Kimi K2.6 (Быстрый анализ длинных текстов)</option>
+                <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелый аудит)</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5</option>
               </select>
             </div>
           </div>

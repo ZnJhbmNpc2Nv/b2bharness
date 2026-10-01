@@ -438,41 +438,42 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     <!-- 2. Dynamic Model Matrix -->
     <div class="model-matrix-panel">
       <div class="matrix-header">
-        <span class="matrix-title">Динамическая Матрица Моделей (Pipeline Roles):</span>
-        <span class="matrix-sync">Без DeepSeek R1 • Авто-синхронизация</span>
+        <span class="matrix-title">Динамическая Матрица Моделей (EuroModels Suite):</span>
+        <span class="matrix-sync">9 моделей • Ролевая авто-синхронизация</span>
       </div>
       <div class="matrix-grid">
         <div class="matrix-col">
           <label>1. Spec Architect:</label>
           <select id="model-architect">
-            <option value="claude-opus-5.5" selected>Claude Opus 5.5</option>
-            <option value="claude-sonnet-5">Claude Sonnet 5</option>
-            <option value="kimi-k3">Kimi K3</option>
-            <option value="qwen-3.8-72b">Qwen 3.8 72B</option>
+            <option value="gpt-6-astra" selected>GPT-6 Astra (Системное проектирование)</option>
+            <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелые точечные задачи)</option>
+            <option value="claude-sonnet-5">Claude Sonnet 5 (Основной кодинг/архитектура)</option>
+            <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (Сложные алгоритмы)</option>
           </select>
         </div>
         <div class="matrix-col">
-          <label>2. TDD Synthesizer:</label>
+          <label>2. TDD Synthesizer / Research:</label>
           <select id="model-tester">
-            <option value="gemini-3.7-pro" selected>Gemini 3.7 Pro</option>
-            <option value="claude-sonnet-5">Claude Sonnet 5</option>
-            <option value="kimi-k3">Kimi K3</option>
+            <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (Мгновенный ресерч/тесты)</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash (Быстрый чат/универсальный)</option>
+            <option value="claude-sonnet-5">Claude Sonnet 5 (Основной кодинг)</option>
           </select>
         </div>
         <div class="matrix-col">
-          <label>3. Lead Coder:</label>
+          <label>3. Lead Coder & Backend:</label>
           <select id="model-coder">
-            <option value="claude-sonnet-5" selected>Claude Sonnet 5</option>
-            <option value="claude-opus-5.5">Claude Opus 5.5</option>
-            <option value="qwen-3.8-72b">Qwen 3.8 72B</option>
-            <option value="gemini-3.7-pro">Gemini 3.7 Pro</option>
+            <option value="claude-sonnet-5" selected>Claude Sonnet 5 (Основной кодинг)</option>
+            <option value="qwen-3.8-max">Qwen 3.8 Max (Бэкенд, SQL, БД, парсеры)</option>
+            <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (Алгоритмы и логика)</option>
+            <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелые задачи)</option>
           </select>
         </div>
         <div class="matrix-col">
-          <label>4. Security Auditor:</label>
+          <label>4. Security Auditor & Review:</label>
           <select id="model-auditor">
-            <option value="kimi-k3" selected>Kimi K3</option>
-            <option value="claude-opus-5.5">Claude Opus 5.5</option>
+            <option value="kimi-k3" selected>Kimi K3 (Глубокое код-ревью и безопасность)</option>
+            <option value="kimi-k2.6">Kimi K2.6 (Быстрый анализ длинных текстов)</option>
+            <option value="claude-opus-5.5">Claude Opus 5.5 (Тяжелый аудит)</option>
             <option value="claude-sonnet-5">Claude Sonnet 5</option>
           </select>
         </div>
