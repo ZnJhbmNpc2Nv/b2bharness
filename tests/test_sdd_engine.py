@@ -125,3 +125,19 @@ def test_context_guard_injection_and_traversal(tmp_path):
     valid, msg = guard.verify_artifact_integrity(session_id, "spec", tampered_spec)
     assert valid is False
     assert "Integrity Violation" in msg
+
+def test_ephemeral_token_lifecycle(tmp_path):
+    from src.api.token_manager import EphemeralTokenManager
+    mgr = EphemeralTokenManager(store_path=str(tmp_path / "ephemeral.json"))
+    
+    # 1. Issue token for 1 hour with limit 2 requests
+    rec = mgr.issue_token("test_colleague", hours_valid=1, max_requests=2)
+    token = rec["token"]
+    assert token.startswith("hb2b-temp-test_colle")
+    
+    # 2. Consume 1st request
+    assert mgr.validate_and_consume(token) is True
+    # 3. Consume 2nd request
+    assert mgr.validate_and_consume(token) is True
+    # 4. 3rd request should fail (limit exceeded)
+    assert mgr.validate_and_consume(token) is False
