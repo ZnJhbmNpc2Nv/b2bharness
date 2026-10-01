@@ -473,3 +473,28 @@ async def get_key_status():
     with open("data/keys.json", "r", encoding="utf-8") as f:
         data = json.load(f)
     return {"active": data.get("active", False)}
+
+class ChatCompletionProxyRequest(BaseModel):
+    model: Optional[str] = "claude-sonnet-5"
+    messages: List[Dict[str, str]]
+    temperature: Optional[float] = 0.2
+    stream: Optional[bool] = False
+
+@app.post("/v1/chat/completions")
+async def proxy_chat_completions(req: ChatCompletionProxyRequest, caller_key: str = Depends(verify_colleague_key)):
+    """OpenAI-compatible LLM gateway proxy protected by colleague API Key and Context Integrity Guard."""
+    # 1. Guard check prompt injection across messages
+    for msg in req.messages:
+        content = msg.get("content", "")
+        is_inj, reason = guard.detect_prompt_injection(content)
+        if is_inj:
+            raise HTTPException(status_code=400, detail=f"Context Security Guard: {reason}")
+    
+    # 2. Forward to LLMClient (which uses your real master CORP_API_KEY)
+    res = await llm_client.chat_completion(
+        messages=req.messages,
+        model=req.model,
+        temperature=req.temperature or 0.2
+    )
+    log_audit("proxy_gateway", caller_key, "PROXY_LLM", f"MODEL_{req.model}")
+    return res
