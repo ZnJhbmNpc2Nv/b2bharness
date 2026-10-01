@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, Header, Query, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Header, Query, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import json
@@ -11,21 +11,23 @@ from datetime import datetime, timezone
 from src.engine.pipeline import PipelineEngine, PipelineState
 from src.core.logger import Logger
 from src.security.scanner import SecurityScanner
+from src.security.context_guard import ContextIntegrityGuard
 from src.core.database import log_audit, init_db
 from src.engine.artifact_manager import ArtifactManager
 from src.engine.orchestrator import AgentOrchestrator
 from src.api.llm_client import LLMClient
+from src.api.auth import verify_colleague_key
 
 # Initialize database
 init_db()
 
 app = FastAPI(
     title="B2B Harness SDD Orchestrator",
-    description="Heavyweight Specification-Driven Development Engine & Agent Swarm API",
-    version="2.0.0"
+    description="Enterprise Specification-Driven Development Engine with Context Guard & A2A Swarm",
+    version="2.1.0"
 )
 
-# Enable CORS for React/Vite Dashboard
+# Enable CORS for React/Vite Dashboard and external integrations
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,6 +39,7 @@ app.add_middleware(
 engine = PipelineEngine()
 logger = Logger()
 scanner = SecurityScanner()
+guard = ContextIntegrityGuard()
 artifact_manager = ArtifactManager()
 orchestrator = AgentOrchestrator()
 llm_client = LLMClient()
@@ -69,8 +72,148 @@ class ApprovalPayload(BaseModel):
     comment: Optional[str] = ""
 
 # -----------------------------------------------------------------------------
+# Embedded Glassmorphism Web Dashboard (Zero-Dependency)
+# -----------------------------------------------------------------------------
+
+DASHBOARD_HTML = """<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B2B Harness SDD Studio</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 30, 49, 0.7);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #38bdf8;
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    h1 { font-size: 24px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+    .pipeline-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 24px; }
+    .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; backdrop-filter: blur(8px); transition: all 0.2s; }
+    .step-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.15); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+    .step-num { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+    .step-name { font-size: 13px; font-weight: 600; margin-top: 4px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; backdrop-filter: blur(8px); }
+    .panel-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+    textarea, input { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--text); font-size: 14px; margin-bottom: 12px; }
+    textarea { height: 160px; resize: vertical; }
+    button { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; font-weight: 600; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+    button:hover { opacity: 0.9; }
+    button.secondary { background: #334155; color: var(--text); margin-left: 8px; }
+    pre { background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 14px; color: #38bdf8; font-family: monospace; font-size: 13px; max-height: 420px; overflow: auto; white-space: pre-wrap; }
+    .guard-banner { background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--success); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🐝 B2B Harness SDD Studio</h1>
+      <span class="badge">A2A Swarm Dual-Gate Active</span>
+    </header>
+
+    <div class="guard-banner">
+      🛡️ <strong>Context Integrity Guard Active:</strong> Prompt Injection Shield, SHA-256 Spec Tamper Protection & Session Isolation Enabled.
+    </div>
+
+    <div class="pipeline-bar" id="pipelineBar">
+      <div class="step-card active"><div class="step-num">Stage 1</div><div class="step-name">PRE-SDD</div></div>
+      <div class="step-card"><div class="step-num">Stage 2</div><div class="step-name">INTENT</div></div>
+      <div class="step-card"><div class="step-num">Stage 3</div><div class="step-name">SPEC</div></div>
+      <div class="step-card"><div class="step-num">Stage 4</div><div class="step-name">PLAN</div></div>
+      <div class="step-card"><div class="step-num">Stage 5</div><div class="step-name">DEV & TDD</div></div>
+      <div class="step-card"><div class="step-num">Stage 6</div><div class="step-name">POST-SDD</div></div>
+      <div class="step-card"><div class="step-num">Stage 7</div><div class="step-name">GATE 2 AUDIT</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-title">📝 SDD Intent & Task Prompt</div>
+        <input type="text" id="sessionId" value="session_colleague_01" placeholder="Session ID" />
+        <textarea id="intentInput" placeholder="Опишите задачу (например: Создать кольцевой буфер с нулевыми зависимостями и поддержкой TTL)..."></textarea>
+        <div>
+          <button onclick="runPipeline()">🚀 Запустить SDD Конвейер</button>
+          <button class="secondary" onclick="approveCurrent()">✔ Утвердить этап</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">📊 Live Artifacts & Terminal</div>
+        <pre id="outputConsole">Готов к запуску. Введите намерение или выберите сессию.</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function runPipeline() {
+      const text = document.getElementById('intentInput').value.trim();
+      const session_id = document.getElementById('sessionId').value.trim();
+      if (!text) return alert('Введите текст намерения!');
+      
+      const out = document.getElementById('outputConsole');
+      out.textContent = '⏳ [STAGE 2/7] Нормализация Intent через LLM Swarm...\\n';
+      
+      try {
+        const res = await fetch('/pipeline/refine-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, session_id })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Ошибка выполнения');
+        out.textContent += '✔ INTENT Готов!\\n\\n' + data.refined_text + '\\n\\n⏳ [STAGE 3/7] Генерация спецификации (OWASP ASVS L2)...\\n';
+        
+        // Auto-run Spec
+        const specRes = await fetch('/pipeline/spec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intent: data.refined_text, session_id })
+        });
+        const specData = await specRes.json();
+        out.textContent += '✔ SPEC Сгенерирован (Locked)!\\n\\n' + specData.content;
+      } catch (err) {
+        out.textContent += '\\n❌ Ошибка: ' + err.message;
+      }
+    }
+
+    async function approveCurrent() {
+      const session_id = document.getElementById('sessionId').value.trim();
+      const out = document.getElementById('outputConsole');
+      try {
+        await fetch('/pipeline/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id, artifact_type: 'spec', approved: true, comment: 'Approved via UI' })
+        });
+        out.textContent += '\\n\\n✔ Этап утвержден экспертом! Переход к SDD-PLAN...';
+      } catch (err) {
+        alert('Ошибка аппрува: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
+"""
+
+# -----------------------------------------------------------------------------
 # Endpoints
 # -----------------------------------------------------------------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_dashboard():
+    """Serves the standalone Glassmorphism Web Dashboard directly."""
+    return HTMLResponse(content=DASHBOARD_HTML)
 
 @app.get("/health")
 async def health():
@@ -78,6 +221,7 @@ async def health():
         "status": "ok",
         "state": engine.state.name,
         "llm_configured": llm_client.is_configured(),
+        "context_guard": "active",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -98,22 +242,41 @@ async def get_graph():
     }
 
 @app.post("/pipeline/pre-sdd")
-async def run_pre_sdd(payload: PreSddPayload):
+async def run_pre_sdd(payload: PreSddPayload, caller_key: str = Depends(verify_colleague_key)):
+    if not guard.validate_session_id(payload.session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id: Path traversal or illegal characters detected")
     if not os.path.exists(payload.source_path):
         raise HTTPException(status_code=404, detail=f"Source path not found: {payload.source_path}")
+        
     res = await orchestrator.execute_pre_sdd(payload.source_path, payload.session_id)
-    log_audit(payload.session_id, "api_user", "PRE_SDD", "COMPLETED")
+    guard.record_artifact_hash(payload.session_id, "discovery", res["content"])
+    log_audit(payload.session_id, caller_key, "PRE_SDD", "COMPLETED")
     return res
 
 @app.post("/pipeline/refine-intent")
-async def refine_intent(payload: IntentPayload):
-    res = await orchestrator.execute_intent(payload.text, payload.session_id or "session_default")
-    log_audit(payload.session_id or "session_default", "api_user", "INTENT", "COMPLETED")
+async def refine_intent(payload: IntentPayload, caller_key: str = Depends(verify_colleague_key)):
+    session_id = payload.session_id or "session_default"
+    if not guard.validate_session_id(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id: Path traversal or illegal characters detected")
+
+    # Guard: Detect Prompt Injection
+    has_injection, inject_reason = guard.detect_prompt_injection(payload.text)
+    if has_injection:
+        raise HTTPException(status_code=400, detail=f"Context Security Guard: {inject_reason}")
+
+    sanitized_text = guard.sanitize_input(payload.text)
+    res = await orchestrator.execute_intent(sanitized_text, session_id)
+    guard.record_artifact_hash(session_id, "intent", res["content"])
+    log_audit(session_id, caller_key, "INTENT", "COMPLETED")
     return {"status": "refined", "refined_text": res["content"], "artifact_path": res["artifact_path"]}
 
 @app.post("/pipeline/spec")
-async def generate_spec(payload: SpecPayload):
-    session_path = os.path.join("data/staging", payload.session_id)
+async def generate_spec(payload: SpecPayload, caller_key: str = Depends(verify_colleague_key)):
+    session_id = payload.session_id or "session_default"
+    if not guard.validate_session_id(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id format")
+
+    session_path = os.path.join("data/staging", session_id)
     intent_content = payload.intent
     if not intent_content:
         intent_file = os.path.join(session_path, "intent.md")
@@ -123,14 +286,24 @@ async def generate_spec(payload: SpecPayload):
         else:
             raise HTTPException(status_code=400, detail="Intent not provided and intent.md not found in staging")
 
-    res = await orchestrator.execute_spec(intent_content, payload.session_id)
+    # Guard: Verify intent integrity
+    valid, msg = guard.verify_artifact_integrity(session_id, "intent", intent_content)
+    if not valid:
+        raise HTTPException(status_code=400, detail=f"Context Poisoning Detected: {msg}")
+
+    res = await orchestrator.execute_spec(intent_content, session_id)
+    guard.record_artifact_hash(session_id, "spec", res["content"])
     engine.transition(PipelineState.SPEC)
-    log_audit(payload.session_id, "api_user", "SPEC", "COMPLETED")
+    log_audit(session_id, caller_key, "SPEC", "COMPLETED")
     return res
 
 @app.post("/pipeline/plan")
-async def generate_plan(payload: PlanPayload):
-    session_path = os.path.join("data/staging", payload.session_id)
+async def generate_plan(payload: PlanPayload, caller_key: str = Depends(verify_colleague_key)):
+    session_id = payload.session_id or "session_default"
+    if not guard.validate_session_id(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id format")
+
+    session_path = os.path.join("data/staging", session_id)
     spec_content = payload.spec
     if not spec_content:
         spec_file = os.path.join(session_path, "spec.md")
@@ -140,9 +313,15 @@ async def generate_plan(payload: PlanPayload):
         else:
             raise HTTPException(status_code=400, detail="Spec not provided and spec.md not found in staging")
 
-    res = await orchestrator.generate_plan_artifact(spec_content, payload.session_id)
+    # Guard: Verify spec integrity
+    valid, msg = guard.verify_artifact_integrity(session_id, "spec", spec_content)
+    if not valid:
+        raise HTTPException(status_code=400, detail=f"Context Poisoning Detected: {msg}")
+
+    res = await orchestrator.generate_plan_artifact(spec_content, session_id)
+    guard.record_artifact_hash(session_id, "plan", res["content"])
     engine.transition(PipelineState.PLAN)
-    log_audit(payload.session_id, "api_user", "PLAN", "COMPLETED")
+    log_audit(session_id, caller_key, "PLAN", "COMPLETED")
     return res
 
 @app.post("/pipeline/execute")
@@ -153,15 +332,21 @@ async def execute_legacy(module_name: str, session_id: str = Header("default"), 
     return {"status": "executed", "message": message}
 
 @app.post("/pipeline/dev")
-async def execute_dev_pipeline(payload: DevPayload):
-    res = await orchestrator.execute_dev_and_post_sdd(payload.session_id, max_repair_rounds=payload.max_rounds or 3)
+async def execute_dev_pipeline(payload: DevPayload, caller_key: str = Depends(verify_colleague_key)):
+    session_id = payload.session_id or "session_default"
+    if not guard.validate_session_id(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id format")
+
+    res = await orchestrator.execute_dev_and_post_sdd(session_id, max_repair_rounds=payload.max_rounds or 3)
     if res["is_green"]:
         engine.transition(PipelineState.POST_SDD)
-    log_audit(payload.session_id, "api_user", "DEV", f"RESULT_{res['status'].upper()}")
+    log_audit(session_id, caller_key, "DEV", f"RESULT_{res['status'].upper()}")
     return res
 
 @app.get("/pipeline/artifacts/{session_id}/{artifact_type}")
 async def get_artifact(session_id: str, artifact_type: str):
+    if not guard.validate_session_id(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session_id format")
     path = f"data/staging/{session_id}/{artifact_type}.md"
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Artifact not found")
@@ -205,7 +390,6 @@ async def save_key(data: dict):
     os.makedirs("data", exist_ok=True)
     with open("data/keys.json", "w", encoding="utf-8") as f:
         json.dump({"key": data.get("value"), "active": True, "added_at": datetime.now(timezone.utc).timestamp()}, f)
-    # Refresh llm client
     global llm_client
     llm_client = LLMClient()
     return {"status": "success"}
