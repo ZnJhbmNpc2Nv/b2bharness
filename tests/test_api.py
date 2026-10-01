@@ -1,12 +1,15 @@
 import pytest
+import os
 from fastapi.testclient import TestClient
 from src.api.main import app
 
 client = TestClient(app)
 
 def test_full_pipeline_flow():
+    test_key = "test_team_access_key"
+    
     # 1. Save Token
-    res = client.post("/config/keys", json={"value": "YOUR_API_KEY_HERE"})
+    res = client.post("/config/keys", json={"value": test_key})
     assert res.status_code == 200
 
     # 2. Check Status
@@ -14,8 +17,12 @@ def test_full_pipeline_flow():
     assert res.status_code == 200
     assert res.json()["active"] is True
 
-    # 3. Refine Intent via LLM
-    res = client.post("/pipeline/refine-intent", json={"text": "Create a user authentication module"})
+    # 3. Refine Intent via pipeline with authorized header
+    res = client.post(
+        "/pipeline/refine-intent",
+        headers={"X-API-Key": test_key},
+        json={"text": "Create a user authentication module"}
+    )
     assert res.status_code == 200
     assert "refined_text" in res.json()
 
@@ -34,4 +41,10 @@ def test_full_pipeline_flow():
     assert res.status_code == 200
     assert res.json()["state"] == "INTENT"
 
-    print("Full pipeline flow test passed successfully!")
+    # 7. Check /report route
+    res = client.get("/report")
+    assert res.status_code == 200
+    assert "B2B-Harness SDD" in res.text
+
+    # Cleanup test keys
+    client.delete("/config/keys")
