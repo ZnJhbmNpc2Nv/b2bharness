@@ -84,8 +84,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <style>
     :root {
       --bg: #090d16;
-      --card-bg: rgba(22, 30, 49, 0.7);
-      --border: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(22, 30, 49, 0.75);
+      --border: rgba(255, 255, 255, 0.12);
       --primary: #38bdf8;
       --accent: #818cf8;
       --success: #34d399;
@@ -95,39 +95,43 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-    h1 { font-size: 24px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .container { max-width: 1240px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    h1 { font-size: 22px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
     .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(56, 189, 248, 0.2); color: var(--primary); }
-    .pipeline-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 24px; }
-    .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; backdrop-filter: blur(8px); transition: all 0.2s; }
+    .pipeline-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
+    .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; backdrop-filter: blur(8px); }
     .step-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.15); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
     .step-num { font-size: 11px; color: var(--muted); text-transform: uppercase; }
-    .step-name { font-size: 13px; font-weight: 600; margin-top: 4px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .step-name { font-size: 12px; font-weight: 600; margin-top: 4px; }
+    .grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 20px; }
     .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; backdrop-filter: blur(8px); }
-    .panel-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
-    textarea, input { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--text); font-size: 14px; margin-bottom: 12px; }
-    textarea { height: 160px; resize: vertical; }
-    button { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; font-weight: 600; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
-    button:hover { opacity: 0.9; }
-    button.secondary { background: #334155; color: var(--text); margin-left: 8px; }
-    pre { background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 14px; color: #38bdf8; font-family: monospace; font-size: 13px; max-height: 420px; overflow: auto; white-space: pre-wrap; }
-    .guard-banner { background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--success); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    .panel-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
+    label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: block; }
+    textarea, input { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--text); font-size: 13px; margin-bottom: 12px; }
+    textarea { height: 130px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .presets { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .preset-btn { background: #1e293b; color: #94a3b8; font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+    .preset-btn:hover { background: #334155; color: #fff; }
+    button.primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; font-weight: 600; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; }
+    button.secondary { background: #334155; color: var(--text); padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; margin-left: 8px; font-weight: 600; }
+    pre { background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 14px; color: #38bdf8; font-family: monospace; font-size: 12px; max-height: 480px; overflow: auto; white-space: pre-wrap; line-height: 1.4; }
+    .guard-banner { background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--success); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>🐝 B2B Harness SDD Studio</h1>
-      <span class="badge">A2A Swarm Dual-Gate Active</span>
+      <span class="badge">Multi-User Team Active</span>
     </header>
 
     <div class="guard-banner">
-      🛡️ <strong>Context Integrity Guard Active:</strong> Prompt Injection Shield, SHA-256 Spec Tamper Protection & Session Isolation Enabled.
+      🛡️ <strong>Context Guard Active:</strong> Prompt Injection Shield, SHA-256 Tamper Protection & Session Isolation Enabled.
     </div>
 
-    <div class="pipeline-bar" id="pipelineBar">
+    <div class="pipeline-bar">
       <div class="step-card active"><div class="step-num">Stage 1</div><div class="step-name">PRE-SDD</div></div>
       <div class="step-card"><div class="step-num">Stage 2</div><div class="step-name">INTENT</div></div>
       <div class="step-card"><div class="step-num">Stage 3</div><div class="step-name">SPEC</div></div>
@@ -139,66 +143,126 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
     <div class="grid">
       <div class="panel">
-        <div class="panel-title">📝 SDD Intent & Task Prompt</div>
-        <input type="text" id="sessionId" value="session_colleague_01" placeholder="Session ID" />
-        <textarea id="intentInput" placeholder="Опишите задачу (например: Создать кольцевой буфер с нулевыми зависимостями и поддержкой TTL)..."></textarea>
+        <div class="panel-title">📝 Параметры задачи</div>
+        <div class="row">
+          <div>
+            <label>API-Ключ (Командный)</label>
+            <input type="text" id="apiKey" value="team-b2b-test-2026" />
+          </div>
+          <div>
+            <label>Имя сессии (Ваше имя / Задача)</label>
+            <input type="text" id="sessionId" value="session_colleague_01" />
+          </div>
+        </div>
+
+        <label>Быстрые примеры:</label>
+        <div class="presets">
+          <span class="preset-btn" onclick="setPrompt('Создать модуль LRU-кэша с поддержкой TTL, maxsize и thread-safe блокировок')">⚡ LRU Cache (TTL)</span>
+          <span class="preset-btn" onclick="setPrompt('Создать JWT валидатор с проверкой подписи RS256, exp и скоупов')">⚡ JWT Validator</span>
+          <span class="preset-btn" onclick="setPrompt('Создать Rate Limiter на Token Bucket с поддержкой лимитов в секунду/минуту')">⚡ Rate Limiter</span>
+        </div>
+
+        <label>Описание намерения (Intent):</label>
+        <textarea id="intentInput" placeholder="Опишите модуль или функционал..."></textarea>
+
         <div>
-          <button onclick="runPipeline()">🚀 Запустить SDD Конвейер</button>
-          <button class="secondary" onclick="approveCurrent()">✔ Утвердить этап</button>
+          <button class="primary" onclick="runPipeline()">🚀 Запустить SDD Конвейер</button>
+          <button class="secondary" onclick="approveStage()">✔ Утвердить этап</button>
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-title">📊 Live Artifacts & Terminal</div>
-        <pre id="outputConsole">Готов к запуску. Введите намерение или выберите сессию.</pre>
+        <div class="panel-title">
+          <span>📊 Live Артефакты & Терминал</span>
+          <span style="font-size: 11px; color: var(--muted);" id="statusTag">Готов</span>
+        </div>
+        <pre id="outputConsole">Добро пожаловать! Выберите быстрый пример или введите описание задачи и нажмите «Запустить SDD Конвейер».</pre>
       </div>
     </div>
   </div>
 
   <script>
+    function setPrompt(txt) {
+      document.getElementById('intentInput').value = txt;
+    }
+
     async function runPipeline() {
       const text = document.getElementById('intentInput').value.trim();
       const session_id = document.getElementById('sessionId').value.trim();
+      const apiKey = document.getElementById('apiKey').value.trim();
       if (!text) return alert('Введите текст намерения!');
-      
+
       const out = document.getElementById('outputConsole');
-      out.textContent = '⏳ [STAGE 2/7] Нормализация Intent через LLM Swarm...\\n';
-      
+      const tag = document.getElementById('statusTag');
+      tag.textContent = 'Обработка...';
+      out.textContent = '⏳ [STAGE 2/7] Нормализация Intent через LLM Swarm (Opus 5.5)...\\n';
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey
+      };
+
       try {
         const res = await fetch('/pipeline/refine-intent', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ text, session_id })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Ошибка выполнения');
-        out.textContent += '✔ INTENT Готов!\\n\\n' + data.refined_text + '\\n\\n⏳ [STAGE 3/7] Генерация спецификации (OWASP ASVS L2)...\\n';
-        
-        // Auto-run Spec
+        out.textContent += '✔ INTENT Готов!\\n\\n' + data.refined_text + '\\n\\n⏳ [STAGE 3/7] Генерация спецификации (OWASP ASVS L2 & CWE-25)...\\n';
+
         const specRes = await fetch('/pipeline/spec', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ intent: data.refined_text, session_id })
         });
         const specData = await specRes.json();
-        out.textContent += '✔ SPEC Сгенерирован (Locked)!\\n\\n' + specData.content;
+        if (!specRes.ok) throw new Error(specData.detail || 'Ошибка генерации Spec');
+        out.textContent += '✔ SPEC Сгенерирован (Locked & Hashed)!\\n\\n' + specData.content + '\\n\\n⏳ [STAGE 4/7] Построение плана задач (Plan Matrix)...\\n';
+
+        const planRes = await fetch('/pipeline/plan', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ spec: specData.content, session_id })
+        });
+        const planData = await planRes.json();
+        out.textContent += '✔ PLAN Готов!\\n\\n' + planData.content + '\\n\\n✔ Конвейер успешно завершен. Для запуска кодогенерации и песочницы нажмите «Утвердить этап».';
+        tag.textContent = 'Успешно';
       } catch (err) {
         out.textContent += '\\n❌ Ошибка: ' + err.message;
+        tag.textContent = 'Ошибка';
       }
     }
 
-    async function approveCurrent() {
+    async function approveStage() {
       const session_id = document.getElementById('sessionId').value.trim();
+      const apiKey = document.getElementById('apiKey').value.trim();
       const out = document.getElementById('outputConsole');
+      const tag = document.getElementById('statusTag');
+      out.textContent += '\\n\\n⏳ [STAGE 5 & 6/7] TDD Синтез тестов (Gemini 3.7) + Coder (Sonnet 5) + Песочница (.sandbox/)...\\n';
+      
       try {
         await fetch('/pipeline/approve', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
           body: JSON.stringify({ session_id, artifact_type: 'spec', approved: true, comment: 'Approved via UI' })
         });
-        out.textContent += '\\n\\n✔ Этап утвержден экспертом! Переход к SDD-PLAN...';
+
+        const devRes = await fetch('/pipeline/dev', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          body: JSON.stringify({ session_id, max_rounds: 3 })
+        });
+        const devData = await devRes.json();
+        out.textContent += `✔ TDD Dev Статус: ${devData.status.toUpperCase()} (Итераций самопочинки: ${devData.rounds_executed})\\n\\n` +
+          `📁 Песочница: ${devData.sandbox_path}\\n` +
+          `📋 Dev Log: ${devData.dev_log_path}\\n\\n` +
+          `🎉 Модуль успешно скомпилирован и проверен в изолированной среде!`;
+        tag.textContent = 'GREEN';
       } catch (err) {
-        alert('Ошибка аппрува: ' + err.message);
+        out.textContent += '\\n❌ Ошибка DEV: ' + err.message;
+        tag.textContent = 'Ошибка';
       }
     }
   </script>
