@@ -276,17 +276,45 @@ class AgentOrchestrator:
 
         return {"status": "completed", "artifact_path": intent_path, "content": content}
 
-    async def execute_spec(self, intent_content: str, session_id: str) -> Dict[str, Any]:
-        """Stage 3: SDD-SPEC Formal Technical Specification with Security Requirements."""
+    async def decompose_complex_intent(self, raw_intent: str) -> List[str]:
+        """Splits monolithic or multi-domain tasks into 2 focused atomic sub-tasks."""
+        prompt = (
+            "You are the Lead Systems Decomposer.\n"
+            "Analyze this software requirement. If it is complex, split it into at most 2 sequential atomic sub-tasks.\n"
+            "SubTask 1 must focus on the Core Data/Algorithm Engine.\n"
+            "SubTask 2 must focus on the Adapter/Interface layer.\n"
+            "Output strictly a JSON list of strings: [\"SubTask 1 description\", \"SubTask 2 description\"]\n\n"
+            f"RAW TASK:\n{raw_intent}"
+        )
+        res = await self.llm.chat_completion([{"role": "user", "content": prompt}], role="architect")
+        content = res["choices"][0]["message"]["content"]
+        try:
+            import re
+            m = re.search(r'\[[\s\S]*?\]', content)
+            if m:
+                parsed = json.loads(m.group(0))
+                if isinstance(parsed, list) and len(parsed) > 0:
+                    return parsed[:2]
+        except Exception:
+            pass
+        return [raw_intent]
+
+    async def execute_spec(self, intent_content: str, session_id: str, max_spec_lines: int = 120) -> Dict[str, Any]:
+        """Stage 3: SDD-SPEC Formal Technical Specification with Strict Micro-Modular Compaction."""
         prompt = (
             "You are the Lead Spec Architect.\n"
-            "Generate a formal, unambiguous technical specification based on this Intent.\n"
-            "Must include:\n"
-            "1. Architectural boundaries and Class/Function signatures\n"
-            "2. Security Requirements (OWASP ASVS L2 & CWE-Top-25 mapped controls)\n"
-            "3. Test Strategy & Invariants (Negative, Edge-case, Boundary)\n"
-            "4. Formal Requirement IDs (e.g. [REQ-SEC-01], [REQ-FUNC-01])\n\n"
-            "NOTE: This specification is locked against manual edits.\n\n"
+            "Generate an ultra-compact, high-density, unambiguous technical specification based on this Intent.\n\n"
+            "CRITICAL ARCHITECTURAL CONSTRAINTS:\n"
+            "1. STRICT COMPACTION: Keep the entire specification UNDER 100-120 lines.\n"
+            "2. MICRO-MODULARITY: Define at most 3-5 core methods/signatures. Avoid deep inheritance or sprawling interfaces.\n"
+            "3. ZERO FLUFF: Omit redundant explanations, boilerplate descriptions, and excessive comments.\n"
+            "4. SECURITY MAPPING: Explicitly tag [REQ-SEC-01] for input validation (CWE-20/OWASP ASVS L2).\n"
+            "5. TEST INVARIANTS: Specify exact input/output boundary assertions.\n\n"
+            "STRUCTURE:\n"
+            "# TECHNICAL SPECIFICATION\n"
+            "## 1. Class & Method Signatures (Compact)\n"
+            "## 2. Security Controls [REQ-SEC-...]\n"
+            "## 3. Test Invariants & Boundaries\n\n"
             f"INTENT:\n{intent_content}"
         )
         res = await self.llm.chat_completion([{"role": "user", "content": prompt}], role="architect")
