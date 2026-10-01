@@ -279,6 +279,15 @@ async def serve_dashboard():
     """Serves the standalone Glassmorphism Web Dashboard directly."""
     return HTMLResponse(content=DASHBOARD_HTML)
 
+@app.get("/report", response_class=HTMLResponse)
+async def serve_report():
+    """Serves the Executive SDD Report in Telegraph style."""
+    report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "REPORT.html")
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Отчет не найден</h1>", status_code=404)
+
 @app.get("/health")
 async def health():
     return {
