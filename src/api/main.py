@@ -146,12 +146,12 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="panel-title">📝 Параметры задачи</div>
         <div class="row">
           <div>
-            <label>API-Ключ (Командный)</label>
-            <input type="text" id="apiKey" value="team-b2b-test-2026" />
+            <label>API-Ключ (выдан администратором)</label>
+            <input type="password" id="apiKey" value="" placeholder="Вставьте ваш API-ключ..." />
           </div>
           <div>
             <label>Имя сессии (Ваше имя / Задача)</label>
-            <input type="text" id="sessionId" value="session_colleague_01" />
+            <input type="text" id="sessionId" value="session_01" placeholder="например: alex_jwt" />
           </div>
         </div>
 

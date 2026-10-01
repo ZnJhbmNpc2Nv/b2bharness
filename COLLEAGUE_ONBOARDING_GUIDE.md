@@ -4,17 +4,15 @@
 
 ---
 
-## 🔑 Ваши персональные ключи доступа (API Keys)
+## 🔑 Авторизация (API Key)
 
-Для авторизации запросов используйте один из выданных токенов в заголовке `X-API-Key` или `Authorization: Bearer <token>`:
+Для выполнения запросов передавайте выданный администратором токен в заголовке `X-API-Key` или `Authorization: Bearer <token>`:
 
-| Пользователь / Роль | Выданный API-Ключ | Назначение |
-| :--- | :--- | :--- |
-| **Developer 1 (Коллега)** | `hb2b-colleague-dev1-7f8e4b2a9c1d` | Запуск стадий, генерация спецификаций и кода |
-| **Developer 2 (Коллега)** | `hb2b-colleague-dev2-3a9d8f1e5c2b` | Запуск стадий, генерация спецификаций и кода |
-| **Lead / Reviewer** | `hb2b-lead-auditor-9c2b4e8a1d7f` | Полный доступ + аудит и утверждение этапов |
+```http
+X-API-Key: <ВАШ_ВЫДАННЫЙ_КЛЮЧ>
+```
 
-*(На сервере ключи прописаны в переменной `HARNESS_API_KEYS`).*
+*(Ключи настраиваются администратором сервера через переменные окружения `HARNESS_API_KEYS` или в защищенном файле `.env`)*.
 
 ---
 
@@ -22,12 +20,13 @@
 
 1. Откройте в браузере адрес сервера:
    ```text
-   http://<IP_ИЛИ_ХОСТ_СЕРВЕРА>:8000/
+   http://<IP_СЕРВЕРА>:8000/
    ```
-2. В поле **Session ID** укажите идентификатор вашей задачи (например, `session_ivan_01`).
-3. Введите описание задачи в поле **Intent** и нажмите **🚀 Запустить SDD Конвейер**.
-4. Все артефакты (`intent.md`, `spec.md`, `plan.md`, `dev_log.md`) будут отображаться в реальном времени в окне справа.
-5. Интерактивная Swagger-документация: `http://<IP_СЕРВЕРА>:8000/docs`.
+2. Вставьте выданный вам ключ в поле **API-Ключ**.
+3. В поле **Имя сессии** укажите идентификатор вашей задачи (например: `ivan_lru_cache` или `alex_jwt`).
+4. Выберите быстрый шаблон или введите описание задачи и нажмите **🚀 Запустить SDD Конвейер**.
+5. Все артефакты (`intent.md`, `spec.md`, `plan.md`, `dev_log.md`) будут сгенерированы в реальном времени в окне справа.
+6. Интерактивная Swagger-документация: `http://<IP_СЕРВЕРА>:8000/docs`.
 
 ---
 
@@ -41,7 +40,7 @@ curl -X GET http://<IP_СЕРВЕРА>:8000/health
 ### 2. Шаг 1: Нормализация Intent (Канонические 4 секции)
 ```bash
 curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/refine-intent \
-  -H "X-API-Key: hb2b-colleague-dev1-7f8e4b2a9c1d" \
+  -H "X-API-Key: <ВАШ_КЛЮЧ>" \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Создать модуль парсинга JWT токенов с проверкой подписи RS256 и TTL",
@@ -52,7 +51,7 @@ curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/refine-intent \
 ### 3. Шаг 2: Генерация Спецификации с требованиями безопасности (OWASP / CWE)
 ```bash
 curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/spec \
-  -H "X-API-Key: hb2b-colleague-dev1-7f8e4b2a9c1d" \
+  -H "X-API-Key: <ВАШ_КЛЮЧ>" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "jwt_auth_session"
@@ -62,7 +61,7 @@ curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/spec \
 ### 4. Шаг 3: Построение плана разработки (Plan Matrix)
 ```bash
 curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/plan \
-  -H "X-API-Key: hb2b-colleague-dev1-7f8e4b2a9c1d" \
+  -H "X-API-Key: <ВАШ_КЛЮЧ>" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "jwt_auth_session"
@@ -72,7 +71,7 @@ curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/plan \
 ### 5. Шаг 4: TDD Синтез, генерация кода и Self-Healing в песочнице
 ```bash
 curl -X POST http://<IP_СЕРВЕРА>:8000/pipeline/dev \
-  -H "X-API-Key: hb2b-colleague-dev1-7f8e4b2a9c1d" \
+  -H "X-API-Key: <ВАШ_КЛЮЧ>" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "jwt_auth_session",
@@ -92,8 +91,8 @@ curl -X GET http://<IP_СЕРВЕРА>:8000/pipeline/artifacts/jwt_auth_session/
 ```python
 import requests
 
-BASE_URL = "http://127.0.0.1:8000"
-API_KEY = "hb2b-colleague-dev1-7f8e4b2a9c1d"
+BASE_URL = "http://<IP_СЕРВЕРА>:8000"
+API_KEY = "<ВАШ_КЛЮЧ>"
 SESSION_ID = "python_demo_01"
 
 headers = {
@@ -121,7 +120,7 @@ print(f"\nDev Status: {dev_data.get('status').upper()} (Rounds: {dev_data.get('r
 
 ---
 
-## 🛡️ Правила безопасности и Context Guard (Важно!)
+## 🛡️ Правила безопасности и Context Guard
 
 1. **Изоляция сессий:** `session_id` должен состоять только из букв, цифр, дефисов и подчеркиваний (от 1 до 64 символов). Попытки передачи путей `../` блокируются.
 2. **Защита от Prompt Injection:** Запросы, содержащие директивы сброса системных инструкций (`ignore previous instructions` и т.д.), блокируются защитным экраном со статусом `400 Context Security Guard`.
