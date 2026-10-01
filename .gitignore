@@ -1,1 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Database & runtime data
+data/*.db
+data/*.sqlite3
+data/*.json
+data/staging/
+!data/.gitkeep
+.sandbox/
+.corpcli/
+
+# Secrets & Environment
+.env
+.env.*
+*.pem
+*.key
+id_ed25519*
+ssh_config_snippet.txt
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 .aider*

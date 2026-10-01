@@ -1,6 +1,6 @@
 import sqlite3
 import os
-import datetime
+from datetime import datetime, timezone
 
 DB_PATH = "data/harness.db"
 
@@ -26,7 +26,7 @@ def init_db():
             user_id TEXT,
             stage TEXT,
             action TEXT,
-            timestamp DATETIME
+            timestamp TEXT
         )
     """)
     conn.execute("""
@@ -36,7 +36,7 @@ def init_db():
             artifact_type TEXT,
             content TEXT,
             version_hash TEXT,
-            timestamp DATETIME
+            timestamp TEXT
         )
     """)
     conn.commit()
@@ -44,9 +44,10 @@ def init_db():
 
 def log_audit(session_id, user_id, stage, action):
     conn = get_connection()
+    now_iso = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "INSERT INTO audit_log (session_id, user_id, stage, action, timestamp) VALUES (?, ?, ?, ?, ?)",
-        (session_id, user_id, stage, action, datetime.datetime.utcnow())
+        (session_id, user_id, stage, action, now_iso)
     )
     conn.commit()
     conn.close()
