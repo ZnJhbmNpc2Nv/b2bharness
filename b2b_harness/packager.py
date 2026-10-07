@@ -1,13 +1,15 @@
 """Module Packager for Corporate Spec-Kit B2B Harness.
 
-Packages verified normalized modules into standardized enterprise reusable modules.
-Generates:
-- module_manifest.json (MCP tool schemas, OpenAPI endpoints, ASVS security, provenance hashes)
-- Dockerfile (hardened python:3.12-slim non-root runtime)
-- run_module.py (zero-dependency MCP stdio server and HTTP REST microservice)
-- test_harness.py (standalone verification test suite)
-- sbom.json (SHA-256 software bill of materials)
-- README.md (enterprise integration guide)
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: На выходе конвейера нужен не просто каталог со скриптами, а готовый к тиражированию программный модуль,
+  который Core-агенты и микросервисы компании могут вызывать из коробки через стандартизированный протокол tools.
+- ЧТО: Комплексный сборщик корпоративного дистрибутива (`ModulePackager`):
+  1) `module_manifest.json`: стандартный манифест инструментов (MCP tools + OpenAPI 3.1 + хэши происхождения).
+  2) `run_module.py`: автономный раннер поддерживающий stdio MCP протокол (`--mcp`) и REST HTTP сервер (`--http`).
+  3) `Dockerfile`: безопасный нерутовый контейнерный образ (`appuser:10001`).
+  4) `test_harness.py`: автономный скрипт самотестирования целостности манифеста и здоровья раннера.
+- ДЛЯ ЧЕГО: Мгновенное подключение полученного функционального модуля в контур корпоративных AI-агентов (A2A / MCP)
+  без ручного написания прокси-адаптеров и бойлерплейта.
 
 Strict Python 3.8+ standard library implementation; zero external dependencies.
 """

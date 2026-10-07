@@ -1,11 +1,13 @@
 """Deterministic A/B Testing Engine and Mock Gateway for Corporate Spec-Kit B2B Harness.
 
-Provides:
-1. MockGateway: Record & Replay deterministic I/O mocking for HTTP, environment variables,
-   and static external service fixtures.
-2. AbComparator: Functional equivalence engine comparing reference vibe-code and normalized
-   distribution modules across schema, return codes, error invariants, timing, and memory.
-   Generates test_log.md and spec_correction.md reports.
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Исходный vibe-код ходит в реальные сетевые API и внешние БД. При параллельном тестировании эталона и нового
+  модуля возникают конфликты портов, а ответы сторонних API плавают во времени, вызывая ложные сбои (flaky tests).
+- ЧТО: Двухкомпонентный движок детерминизма:
+  1) `MockGateway`: перехват сетевого I/O в режиме Record & Replay (запись при первом запуске эталона, воспроизведение для модуля).
+  2) `AbComparator`: функциональное сравнение JSON-схем, кодов возврата, исключений, времени и памяти.
+- ДЛЯ ЧЕГО: Строгое математическое доказательство того, что нормализованный модуль работает полностью эквивалентно
+  исходному коду эксперта, а при расхождении — автоматическая генерация `spec_correction.md` для коррекции спеки.
 
 Strict Python 3.8+ standard library implementation; zero external dependencies.
 """

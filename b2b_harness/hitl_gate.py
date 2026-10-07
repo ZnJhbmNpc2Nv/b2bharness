@@ -1,7 +1,15 @@
 """Human-in-the-Loop (HITL) Gatekeeper for Corporate Spec-Kit B2B Harness.
 
-Provides deterministic approval workflows, expert intervention checkpoints,
-diff inspection, and clarification interviews (Grill-Me protocol).
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Полностью автономные агенты не обладают телепатией: они не могут угадать бизнес-контекст эксперта
+  и склонны галлюцинировать или зацикливаться на нетривиальных ошибках. Без участия человека риск брака огромен.
+- ЧТО: Асинхронный контроллер человеческих гейтов (`HitlGateManager`):
+  1) `create_clarification_gate`: структурированный опросник "Grill-Me" на этапе Intent с вариантами и предположениями.
+  2) `create_gate`: пауза конвейера в статусе `AWAITING_HUMAN` при превышении лимита 3 циклов в POST-SDD.
+  3) `resolve_gate`: фиксация решения эксперта (`APPROVED`, `REJECTED`, `APPROVED_WITH_CONDITIONS`) с фиксацией роли и обоснования.
+- ДЛЯ ЧЕГО: Обеспечение управляемого симбиоза человека и ИИ: человек принимает ключевые развилочные решения,
+  а рутину генерации кода, тестов и документации выполняют агенты.
+
 Strict Python 3.8+ standard library implementation; zero external dependencies.
 """
 import sqlite3

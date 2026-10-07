@@ -1,7 +1,16 @@
 """AST-based SAST Security Scanner, SBOM Generator, and Distribution Sealer.
 
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Код, синтезированный LLM или экспертами, может содержать классические уязвимости (SQLi, Command Injection, eval)
+  и несовместимые или уязвимые зависимости. Без проверки такой код блокируется безопасниками при релизе.
+- ЧТО: Три составляющие безопасной сборки:
+  1) `AstSastScanner`: статический синтаксический анализ Python AST (правила SEC-001 ... SEC-006).
+  2) `SbomGenerator`: генерация спецификации состава ПО в стандарте CycloneDX 1.5 JSON.
+  3) `ModuleSealer`: криптографическая SHA-256 печать всех файлов дистрибутива (seal.json).
+- ДЛЯ ЧЕГО: Автоматическое получение подтверждения безопасности (security score, 0 critical findings)
+  и подготовка пакета для аудита ИБ без необходимости ручного вычитывания кода.
+
 Strict Standard Library Python 3.8+, Zero External Dependencies.
-Corporate Spec-Kit B2B-Harness Security Engine.
 """
 
 import os

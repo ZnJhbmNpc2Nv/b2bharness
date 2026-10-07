@@ -1,8 +1,15 @@
 """Workspace and File Drop Module for Corporate Spec-Kit.
 
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Эксперту или разработчику неудобно настраивать пути в консоли, переносить файлы по SSH или редактировать конфиги.
+  Нужна простая точка входа в файловой системе и интерфейсе.
+- ЧТО: Локальная директория `workspace/` с автоматическим обнаружением проектов:
+  1) `_handle_list_files`: сканирование дерева каталогов и списка проектов.
+  2) `_handle_upload`: прием файлов и `.zip` архивов через Web UI (Drag & Drop) с безопасной распаковкой.
+  3) Защита от Path Traversal и Zip Slip атак.
+- ДЛЯ ЧЕГО: Пользователь за секунды закидывает свой PoC (файлами или zip-архивом) и отправляет его в пайплайн в 1 клик.
+
 Pure standard library Python 3.8+; zero external dependencies.
-Provides a local directory where developers can drop projects, upload files,
-unpack zip archives, and initiate SDD normalization pipelines.
 """
 import base64
 import os

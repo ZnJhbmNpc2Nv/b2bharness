@@ -1,9 +1,14 @@
 """Nominee Promoter for Corporate Spec-Kit B2B Harness.
 
-Extracts successful bug fixes, edge-case hardening rules, and invariants from
-POST-SDD iterations into reusable candidate requirements (nominee-xxx.md).
-Maps candidate requirements to enterprise domains (SECURITY, RESILIENCE, PRIVACY, RELIABILITY),
-and formats them for 1-click adoption into `modules/req_bank`.
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Ценный опыт исправления багов и редких краевых условий часто теряется после релиза проекта.
+  Следующий разработчик или агент наступает на те же самые грабли снова и снова.
+- ЧТО: Движок накопления корпоративного знания (`NomineePromoter`):
+  1) Извлекает успешные фиксы из `POST-SDD` и оформляет их в кандидаты требований `nominee-xxx.md`.
+  2) Нормализует домены (SECURITY, RESILIENCE, PRIVACY, RELIABILITY).
+  3) Обеспечивает 1-клик промоушен кандидата в постоянный Репозиторий Требований (`req_bank`).
+- ДЛЯ ЧЕГО: Постоянное автоматическое самообучение и обогащение корпоративной базы знаний:
+  каждая решенная проблема навсегда становится стандартом для будущих разработок.
 
 Strict Python 3.8+ standard library implementation; zero external dependencies.
 """

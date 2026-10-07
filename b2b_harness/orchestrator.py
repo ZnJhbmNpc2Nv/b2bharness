@@ -1,8 +1,13 @@
 """Core Multi-Agent B2B Orchestration Engine for Corporate Spec-Kit.
 
+КОНЦЕПТУАЛЬНАЯ ТРИАДА МОДУЛЯ:
+- ЗАЧЕМ: Vibe-coding порождает хаос несовместимых стилей, отсутствие тестов и галлюцинации LLM из-за потери контекста.
+- ЧТО: Конечный автомат 7 стадий (PRE_SDD -> SDD_INTENT -> SDD_SPEC -> SDD_PLAN -> SDD_DEV -> POST_SDD -> AB_TEST)
+  с транзакционными чекпоинтами в SQLite WAL, типизированными A2A конвертами сообщений и AST-анализом.
+- ДЛЯ ЧЕГО: Автоматическая пошаговая нормализация PoC-проектов в стандартизированные безопасные модули с защитой
+  от зацикливания (лимит 3 циклов) и эскалацией человеку через Human-in-the-Loop гейты.
+
 Zero external dependencies; pure Python 3.8+ standard library.
-Implements transactional SQLite WAL state checkpoints, A2A messaging protocol,
-AST-based discovery and SAST verification, and Human-in-the-Loop (HITL) gates.
 """
 import ast
 import contextlib
