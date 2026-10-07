@@ -1,1 +1,23 @@
-.aider*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite temporary WAL journals
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Local environment / IDE
+.env
+.venv/
+env/
+venv/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Scratch & temporary artifacts
+scratch/
+tmp/

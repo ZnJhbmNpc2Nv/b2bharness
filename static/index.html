@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corporate Spec-Kit // SDD Air-Gapped Platform</title>
+  <link rel="stylesheet" href="css/speckit.css">
+</head>
+<body>
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">SK</div>
+      <div>
+        <div class="brand-title">CORPORATE SPEC-KIT</div>
+        <div class="brand-subtitle">SPECIFICATION-DRIVEN DEVELOPMENT (SDD) // AIR-GAP COMPLIANT</div>
+      </div>
+    </div>
+
+    <!-- Central Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="tab-dag">
+        <span>🌐</span> Lineage DAG
+      </button>
+      <button class="nav-tab" data-tab="tab-reqs">
+        <span>📋</span> Requirements & Diffs
+      </button>
+      <button class="nav-tab" data-tab="tab-clars">
+        <span>❓</span> Clarification Loop
+      </button>
+      <button class="nav-tab" data-tab="tab-matrix">
+        <span>📊</span> Traceability (RTM)
+      </button>
+      <button class="nav-tab" data-tab="tab-audit">
+        <span>📜</span> Audit Ledger
+      </button>
+      <button class="nav-tab" data-tab="tab-export">
+        <span>⚙️</span> Export & AI
+      </button>
+    </nav>
+
+    <!-- Project Selector & Actions -->
+    <div class="header-actions">
+      <select id="project-select" class="form-select" style="min-width: 220px; font-weight: 600;"></select>
+      <button id="btn-new-project" class="btn btn-secondary btn-sm" title="Create New Specification Project">
+        + New Spec
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="main-content">
+
+    <!-- KPI Ribbon -->
+    <section class="kpi-ribbon">
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-title">RTM Traceability Score</div>
+          <div id="kpi-coverage-val" class="kpi-val">0%</div>
+          <div class="progress-track" style="margin-top: 8px;">
+            <div id="kpi-coverage-bar" class="progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+        <span style="font-size: 26px;">📊</span>
+      </div>
+
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-title">Active Requirements</div>
+          <div id="kpi-reqs-val" class="kpi-val">0</div>
+          <div id="kpi-reqs-sub" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">0 accepted</div>
+        </div>
+        <span style="font-size: 26px;">📋</span>
+      </div>
+
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-title">Clarifications Pending</div>
+          <div id="kpi-clars-val" class="kpi-val" style="color: var(--amber);">0</div>
+          <div id="kpi-clars-sub" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">0 resolved</div>
+        </div>
+        <span style="font-size: 26px;">❓</span>
+      </div>
+
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-title">Engineering Tasks</div>
+          <div id="kpi-tasks-val" class="kpi-val">0</div>
+          <div id="kpi-tasks-sub" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">0 completed</div>
+        </div>
+        <span style="font-size: 26px;">⚙️</span>
+      </div>
+    </section>
+
+    <!-- ================= TAB 1: PROVENANCE & LINEAGE DAG ================= -->
+    <div id="tab-dag" class="tab-pane active">
+      <div class="card" style="padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap;">
+          <span style="font-weight: 700; color: #fff;">GRAPH LEGEND:</span>
+          <span>🎯 Intent</span>
+          <span>📜 Constitution</span>
+          <span>📋 Requirement</span>
+          <span>❓ Clarification</span>
+          <span>⚙️ Task</span>
+          <span>🧪 Test</span>
+          <span>📦 Code</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary btn-sm" onclick="speckitUI.dag.resetSelection()">
+            🔄 Reset Highlight
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="speckitUI.refreshAllData()">
+            ⚡ Re-sync Graph
+          </button>
+        </div>
+      </div>
+
+      <div class="dag-layout">
+        <!-- SVG Canvas Canvas Container -->
+        <div id="dag-canvas-container" class="dag-container"></div>
+
+        <!-- Provenance Inspector Panel ("Откуда что родилось") -->
+        <aside id="dag-inspector-panel" class="dag-inspector"></aside>
+      </div>
+    </div>
+
+    <!-- ================= TAB 2: REQUIREMENTS & DIFFS ================= -->
+    <div id="tab-reqs" class="tab-pane">
+      <div class="filter-bar">
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-sm filter-pill-cat active" data-cat="ALL">All Categories</button>
+          <button class="btn btn-secondary btn-sm filter-pill-cat" data-cat="FUNCTIONAL">Functional</button>
+          <button class="btn btn-secondary btn-sm filter-pill-cat" data-cat="SECURITY">Security</button>
+          <button class="btn btn-secondary btn-sm filter-pill-cat" data-cat="COMPLIANCE">Compliance</button>
+          <button class="btn btn-secondary btn-sm filter-pill-cat" data-cat="PERFORMANCE">Performance</button>
+        </div>
+
+        <input type="text" id="req-search-input" class="search-input" placeholder="🔍 Search requirements..." />
+
+        <div style="margin-left: auto;">
+          <button class="btn btn-primary" onclick="speckitUI.openCreateReqModal()">
+            + Draft Requirement
+          </button>
+        </div>
+      </div>
+
+      <!-- Requirements Container -->
+      <div id="requirements-list"></div>
+    </div>
+
+    <!-- ================= TAB 3: CLARIFICATION LOOP ================= -->
+    <div id="tab-clars" class="tab-pane">
+      <div class="filter-bar">
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-sm filter-pill-clar active" data-status="ALL">All Questions</button>
+          <button class="btn btn-secondary btn-sm filter-pill-clar" data-status="OPEN">Open (Pending Answer)</button>
+          <button class="btn btn-secondary btn-sm filter-pill-clar" data-status="RESOLVED">Resolved</button>
+        </div>
+
+        <div style="margin-left: auto;">
+          <button class="btn btn-primary" onclick="speckitUI.openAskClarModal()">
+            + Ask Question
+          </button>
+        </div>
+      </div>
+
+      <!-- Clarifications Container -->
+      <div id="clarifications-list"></div>
+    </div>
+
+    <!-- ================= TAB 4: TRACEABILITY MATRIX (RTM) ================= -->
+    <div id="tab-matrix" class="tab-pane">
+      <!-- Orphan Alert Banner -->
+      <div id="orphan-reqs-alert" class="orphan-banner" style="display: none;"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📊</span> Requirements Traceability Matrix (RTM)
+          </div>
+          <span style="font-size: 12px; color: var(--text-dim);">
+            Complete verification cross-reference: Requirement ➔ Clarification ➔ Tasks ➔ Tests ➔ Code Targets
+          </span>
+        </div>
+        <div id="matrix-table-container"></div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 5: AUDIT & CHANGE HISTORY ================= -->
+    <div id="tab-audit" class="tab-pane">
+      <div class="filter-bar">
+        <input type="text" id="audit-search-input" class="search-input" placeholder="🔍 Search audit trail (actor, ID, details)..." />
+        <div style="margin-left: auto; font-size: 12px; color: var(--text-dim);">
+          Immutable tamper-resistant revision ledger (WAL)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📜</span> Corporate Audit Ledger & Justification Log
+          </div>
+        </div>
+        <div id="audit-table-container"></div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 6: CORPORATE EXPORT & SETTINGS ================= -->
+    <div id="tab-export" class="tab-pane">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+        
+        <!-- Export Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📦</span> Spec-Kit Artifact Bundles
+            </div>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+            Export standard corporate SDD markdown files (<code>spec.md</code>, <code>constitution.md</code>, <code>rtm_matrix.md</code>, <code>clarifications.md</code>) directly into local storage, or download a self-contained standalone HTML dossier.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button class="btn btn-primary" onclick="speckitUI.exportMarkdownBundle()">
+              📁 Export Markdown Spec-Kit Bundle
+            </button>
+            <button class="btn btn-secondary" onclick="speckitUI.downloadHtmlDossier()">
+              📄 Download Standalone HTML Dossier
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Integration Settings Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🤖</span> Corporate AI Bridge Settings
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="speckitUI.loadSettings()">
+              Sync
+            </button>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+            Configure corporate internal OpenAI-compatible LLM endpoint for autonomous clarification suggestions and task decomposition.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">AI Endpoint URL</label>
+            <input type="text" id="setting-ai-endpoint" class="form-input" placeholder="e.g. http://internal-llm.corp:8000/v1" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">API Key / Token (Optional for air-gap)</label>
+            <input type="password" id="setting-ai-key" class="form-input" placeholder="corp-sk-..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Model Identifier</label>
+            <input type="text" id="setting-ai-model" class="form-input" placeholder="claude-3-7-sonnet" />
+          </div>
+
+          <button class="btn btn-primary" onclick="speckitUI.saveSettings()">
+            💾 Save AI Bridge Configuration
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS CONTAINER ================= -->
+
+  <!-- Modal 1: Create Requirement -->
+  <div id="modal-create-req" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Draft New Specification Requirement</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-create-req">
+        <div class="form-group">
+          <label class="form-label">Requirement Title</label>
+          <input type="text" id="create-req-title" class="form-input" required placeholder="e.g. Mutual TLS Handshake Enforcement" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="create-req-category" class="form-select">
+            <option value="FUNCTIONAL">FUNCTIONAL</option>
+            <option value="SECURITY">SECURITY</option>
+            <option value="COMPLIANCE">COMPLIANCE</option>
+            <option value="ARCHITECTURE">ARCHITECTURE</option>
+            <option value="PERFORMANCE">PERFORMANCE</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description (Normative Spec)</label>
+          <textarea id="create-req-description" class="form-textarea" required placeholder="The gateway must enforce..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rationale / Business Justification</label>
+          <textarea id="create-req-rationale" class="form-textarea" style="min-height: 70px;" placeholder="Prevents unauthorized intranet access..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin: 0;">Acceptance Criteria (Given / When / Then)</label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="speckitUI.addCriteriaField('create-req-criteria-list')">
+              + Add Rule
+            </button>
+          </div>
+          <div id="create-req-criteria-list"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Author Name</label>
+            <input type="text" id="create-req-author-name" class="form-input" required value="Corporate Contributor" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Author Role</label>
+            <input type="text" id="create-req-author-role" class="form-input" required value="Architect" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Creation Justification</label>
+          <input type="text" id="create-req-justification" class="form-input" required value="Initial requirement baseline" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Requirement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Edit Requirement & Live Diff -->
+  <div id="modal-edit-req" class="modal-overlay">
+    <div class="modal-card" style="max-width: 820px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Edit Requirement & Version Audit</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-edit-req">
+        <input type="hidden" id="edit-req-id" />
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" id="edit-req-title" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="edit-req-category" class="form-select">
+              <option value="FUNCTIONAL">FUNCTIONAL</option>
+              <option value="SECURITY">SECURITY</option>
+              <option value="COMPLIANCE">COMPLIANCE</option>
+              <option value="ARCHITECTURE">ARCHITECTURE</option>
+              <option value="PERFORMANCE">PERFORMANCE</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="edit-req-status" class="form-select">
+              <option value="PROPOSED">PROPOSED</option>
+              <option value="ACCEPTED">ACCEPTED</option>
+              <option value="DEPRECATED">DEPRECATED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin: 0;">Description</label>
+            <button type="button" class="btn btn-secondary btn-sm" style="color: #c084fc;" onclick="speckitUI.aiSuggestClarifications()">
+              🤖 AI Clarify Suggestions
+            </button>
+          </div>
+          <textarea id="edit-req-description" class="form-textarea" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rationale</label>
+          <textarea id="edit-req-rationale" class="form-textarea" style="min-height: 60px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin: 0;">Acceptance Criteria</label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="speckitUI.addCriteriaField('edit-req-criteria-list')">
+              + Add Rule
+            </button>
+          </div>
+          <div id="edit-req-criteria-list"></div>
+        </div>
+
+        <!-- Real-time Live Diff Preview -->
+        <div class="form-group">
+          <label class="form-label" style="color: var(--cyan);">Live Unified Diff (vs Previous Version)</label>
+          <div id="edit-req-live-diff"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Author Name</label>
+            <input type="text" id="edit-req-author-name" class="form-input" required value="Corporate Contributor" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Author Role</label>
+            <input type="text" id="edit-req-author-role" class="form-input" required value="Tech Lead" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color: var(--amber);">Audit Change Justification (Mandatory)</label>
+          <input type="text" id="edit-req-justification" class="form-input" required placeholder="Explain reason for modification to satisfy Corporate Audit..." />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Revision (Bump Version)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Diff Inspector -->
+  <div id="modal-diff-inspector" class="modal-overlay">
+    <div class="modal-card" style="max-width: 860px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Revision History & Unified Diff</h3>
+          <div id="diff-modal-req-title" style="font-size: 12px; color: var(--cyan); font-family: var(--font-mono);"></div>
+        </div>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 14px; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px;">
+        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">COMPARE:</span>
+        <select id="diff-select-v1" class="form-select" style="max-width: 280px;"></select>
+        <span style="color: var(--cyan); font-weight: bold;">➔</span>
+        <select id="diff-select-v2" class="form-select" style="max-width: 280px;"></select>
+      </div>
+
+      <div id="diff-meta-info"></div>
+      <div id="diff-content-view"></div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button type="button" class="btn btn-secondary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Ask Clarification -->
+  <div id="modal-ask-clar" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Ask Clarification (Spec-Kit Q&A Gate)</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-ask-clar">
+        <div class="form-group">
+          <label class="form-label">Linked Requirement (Optional)</label>
+          <select id="ask-clar-req-select" class="form-select"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Clarification Question</label>
+          <textarea id="ask-clar-question" class="form-textarea" required placeholder="What should be the behavior when...?"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Asked By (Name)</label>
+            <input type="text" id="ask-clar-author-name" class="form-input" required value="Engineer" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <input type="text" id="ask-clar-author-role" class="form-input" required value="Developer" />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Resolve Clarification -->
+  <div id="modal-resolve-clar" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Resolve Clarification Question</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-resolve-clar">
+        <input type="hidden" id="resolve-clar-id" />
+
+        <div class="form-group">
+          <label class="form-label">Question</label>
+          <div id="resolve-clar-question-text" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 13px; color: #fff;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Definitive Resolution / Answer</label>
+          <textarea id="resolve-clar-answer" class="form-textarea" required placeholder="The approved specification behavior is..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Answered By</label>
+            <input type="text" id="resolve-clar-author-name" class="form-input" required value="Chief Architect" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <input type="text" id="resolve-clar-author-role" class="form-input" required value="Lead" />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Resolution</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Create Task -->
+  <div id="modal-create-task" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Create Implementation Task</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-create-task">
+        <div class="form-group">
+          <label class="form-label">Parent Requirement</label>
+          <select id="create-task-req-select" class="form-select" required></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" id="create-task-title" class="form-input" required placeholder="e.g. Implement SSLContext wrapper with CRL verification" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="create-task-description" class="form-textarea" placeholder="Implementation instructions..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Assignee</label>
+            <input type="text" id="create-task-assignee" class="form-input" value="Dev Team" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Test Case Identifier</label>
+            <input type="text" id="create-task-test-case" class="form-input" placeholder="e.g. TEST-MTLS-01" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Target Source File / Function</label>
+          <input type="text" id="create-task-code-target" class="form-input" placeholder="e.g. sec_gateway/tls.py:wrap_socket" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Create Project -->
+  <div id="modal-create-project" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="color: #fff; font-size: 16px; font-weight: 700;">Initialize New Specification Project</h3>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+
+      <form id="form-create-project">
+        <div class="form-group">
+          <label class="form-label">Specification ID</label>
+          <input type="text" id="create-project-id" class="form-input" placeholder="e.g. proj-hsm-vault" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" id="create-project-title" class="form-input" required placeholder="e.g. Corporate Hardware Security Module Vault" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Business Intent</label>
+          <textarea id="create-project-intent" class="form-textarea" placeholder="The core purpose and business driver of this system..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Enterprise Security Constitution</label>
+          <textarea id="create-project-constitution" class="form-textarea" style="min-height: 120px;" placeholder="# Enterprise Security Constitution&#10;1. Zero external egress..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Initialize Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts: 100% Zero external CDN links -->
+  <script src="js/speckit_api.js"></script>
+  <script src="js/speckit_dag.js"></script>
+  <script src="js/speckit_ui.js"></script>
+</body>
+</html>

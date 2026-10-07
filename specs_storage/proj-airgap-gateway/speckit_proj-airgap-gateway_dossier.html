@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec-Kit Dossier: Corporate Air-Gapped Secure Gateway</title>
+<style>
+:root {
+  --bg-main: #0b0f19;
+  --bg-card: #131b2e;
+  --bg-input: #1b2640;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --border-line: #1e293b;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  padding: 24px;
+  line-height: 1.5;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-line);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+.title { font-size: 24px; font-weight: 700; color: #fff; }
+.badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 16px;
+}
+.kpi-num { font-size: 28px; font-weight: 700; color: var(--accent-cyan); }
+.kpi-label { font-size: 13px; color: var(--text-muted); }
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-line);
+  padding-bottom: 8px;
+  color: #fff;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-line);
+  font-size: 13px;
+}
+th { background: #0f172a; color: var(--text-muted); font-weight: 600; }
+pre, code { font-family: var(--font-mono); }
+.diff-container {
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+.diff-delete { background: rgba(244, 63, 94, 0.2); color: #fda4af; }
+.diff-insert { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1 class="title">Corporate Air-Gapped Secure Gateway</h1>
+      <p style="color:var(--text-muted); font-size: 14px; margin-top: 4px;">Self-Contained Spec-Kit Air-Gapped Dossier | ID: <code>proj-airgap-gateway</code></p>
+    </div>
+    <span class="badge">APPROVED</span>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-num">100%</div>
+      <div class="kpi-label">Traceability Coverage</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">4</div>
+      <div class="kpi-label">Requirements</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">1</div>
+      <div class="kpi-label">Clarifications</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">4</div>
+      <div class="kpi-label">Engineering Tasks</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">1. Business Intent & Background</h2>
+    <p style="font-size:14px; line-height:1.6;">Build an internal Corporate Air-Gapped API Gateway that runs on enterprise intranet servers with zero internet egress, strict mTLS client certificate authentication, full request tracing, and real-time tampering-resistant audit logging compliant with ISO-27001.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">2. Enterprise Security Constitution</h2>
+    <pre style="white-space:pre-wrap; font-size:13px; color:#cbd5e1;"># Enterprise Security Constitution (v1.4)
+
+1. **Zero External Egress**: No requests may exit internal network 10.0.0.0/8.
+2. **Cryptographic Integrity**: All credentials and tokens must use hardware HSM or AES-256-GCM.
+3. **Zero-Dependency Core**: Runtime components must execute without unverified external package repositories (pip/npm).
+4. **Audit Traceability**: Every API invocation must produce an immutable audit log entry within 5ms.</pre>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3. Traceability Matrix (RTM)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>Category</th>
+          <th>Version</th>
+          <th>Author</th>
+          <th>Tasks</th>
+          <th>Tests</th>
+          <th>Coverage</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><strong>REQ-LOG-002</strong>: Tamper-Evident SHA-256 Audit Trail</td>
+          <td><span class="badge">COMPLIANCE</span></td>
+          <td>v1</td>
+          <td>Mikhail Sidorov (Compliance Officer)</td>
+          <td>1 tasks</td>
+          <td>1 tests</td>
+          <td><strong>100%</strong></td>
+        </tr>
+
+        <tr>
+          <td><strong>REQ-PERF-004</strong>: Zero-Copy Direct Socket Proxying</td>
+          <td><span class="badge">PERFORMANCE</span></td>
+          <td>v1</td>
+          <td>Visual Craftsman (Performance Lead)</td>
+          <td>1 tasks</td>
+          <td>1 tests</td>
+          <td><strong>100%</strong></td>
+        </tr>
+
+        <tr>
+          <td><strong>REQ-RT-003</strong>: Dynamic In-Memory Routing Table with Health Checks</td>
+          <td><span class="badge">FUNCTIONAL</span></td>
+          <td>v1</td>
+          <td>Alexander Smirnov (Lead Backend Engineer)</td>
+          <td>1 tasks</td>
+          <td>1 tests</td>
+          <td><strong>100%</strong></td>
+        </tr>
+
+        <tr>
+          <td><strong>REQ-SEC-001</strong>: Strict Mutual TLS (mTLS) Authentication</td>
+          <td><span class="badge">SECURITY</span></td>
+          <td>v2</td>
+          <td>Elena Voronova (Chief Security Architect)</td>
+          <td>1 tasks</td>
+          <td>1 tests</td>
+          <td><strong>100%</strong></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">4. Requirements Ledger & Revision Attribution</h2>
+
+    <div style="margin-bottom: 24px; border:1px solid #1e293b; border-radius:6px; padding:16px; background:#0f172a;">
+      <h3 style="color:#38bdf8;">[REQ-LOG-002] Tamper-Evident SHA-256 Audit Trail <span class="badge">v1</span></h3>
+      <p style="color:var(--text-muted); font-size:12px; margin:4px 0 12px 0;">Author: Mikhail Sidorov (Compliance Officer) | Status: ACCEPTED</p>
+      <p style="margin-bottom:8px;"><strong>Description:</strong> Every incoming request and outbound proxy dispatch must be logged with timestamp, client fingerprint, route, status code, and a chained SHA-256 hash verifying log integrity.</p>
+      <p style="margin-bottom:8px;"><strong>Rationale:</strong> Required by internal corporate compliance and ISO-27001 audit standards.</p>
+      <div style="margin-top:12px;">
+        <strong>Acceptance Criteria:</strong>
+        <ul style="margin-left:20px; margin-top:4px;">
+<li>Each log entry includes previous_hash, computing chained integrity.</li><li>Log buffer writes synchronously to local disk before returning HTTP 200/204 to client.</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px;">
+        <strong>Revision History & Audit Trail:</strong>
+
+      </div>
+    </div>
+
+    <div style="margin-bottom: 24px; border:1px solid #1e293b; border-radius:6px; padding:16px; background:#0f172a;">
+      <h3 style="color:#38bdf8;">[REQ-PERF-004] Zero-Copy Direct Socket Proxying <span class="badge">v1</span></h3>
+      <p style="color:var(--text-muted); font-size:12px; margin:4px 0 12px 0;">Author: Visual Craftsman (Performance Lead) | Status: PROPOSED</p>
+      <p style="margin-bottom:8px;"><strong>Description:</strong> The gateway must utilize zero-copy memory buffers for proxy stream forwarding.</p>
+      <p style="margin-bottom:8px;"><strong>Rationale:</strong> Minimizes CPU cache thrashing during 10Gbps line-rate forwarding.</p>
+      <div style="margin-top:12px;">
+        <strong>Acceptance Criteria:</strong>
+        <ul style="margin-left:20px; margin-top:4px;">
+<li>Forwarding throughput must exceed 9.5 Gbps with under 1ms P99 jitter.</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px;">
+        <strong>Revision History & Audit Trail:</strong>
+
+        <div style="background:#131c31; border-left:3px solid var(--accent-cyan); padding:8px 12px; margin-top:8px; border-radius:4px; font-size:12px;">
+          <div><strong>v1 [CREATED]</strong> by Visual Craftsman (Performance Lead) at 2026-10-07T13:10:17Z</div>
+          <div style="color:var(--text-muted); margin-top:2px;">Justification: Throughput optimization</div>
+          
+        </div>
+
+      </div>
+    </div>
+
+    <div style="margin-bottom: 24px; border:1px solid #1e293b; border-radius:6px; padding:16px; background:#0f172a;">
+      <h3 style="color:#38bdf8;">[REQ-RT-003] Dynamic In-Memory Routing Table with Health Checks <span class="badge">v1</span></h3>
+      <p style="color:var(--text-muted); font-size:12px; margin:4px 0 12px 0;">Author: Alexander Smirnov (Lead Backend Engineer) | Status: ACCEPTED</p>
+      <p style="margin-bottom:8px;"><strong>Description:</strong> Gateway routes incoming HTTP requests to backend microservices based on prefix matches with passive circuit breaker failover if upstream 5xx rate exceeds 10%.</p>
+      <p style="margin-bottom:8px;"><strong>Rationale:</strong> Ensures high availability without requiring external Consul or etcd cluster.</p>
+      <div style="margin-top:12px;">
+        <strong>Acceptance Criteria:</strong>
+        <ul style="margin-left:20px; margin-top:4px;">
+<li>Route lookup latency must be under 0.5ms for 1000 registered endpoints.</li><li>Circuit breaker trips to OPEN on 3 consecutive 502/504 errors, failing fast without blocking.</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px;">
+        <strong>Revision History & Audit Trail:</strong>
+
+      </div>
+    </div>
+
+    <div style="margin-bottom: 24px; border:1px solid #1e293b; border-radius:6px; padding:16px; background:#0f172a;">
+      <h3 style="color:#38bdf8;">[REQ-SEC-001] Strict Mutual TLS (mTLS) Authentication <span class="badge">v2</span></h3>
+      <p style="color:var(--text-muted); font-size:12px; margin:4px 0 12px 0;">Author: Elena Voronova (Chief Security Architect) | Status: ACCEPTED</p>
+      <p style="margin-bottom:8px;"><strong>Description:</strong> The gateway must enforce bidirectional mTLS with client certificate validation against the Corporate Root CA. Connections without valid certificates must be rejected at TLS handshake.</p>
+      <p style="margin-bottom:8px;"><strong>Rationale:</strong> Prevents spoofing and unauthorized network access inside corporate DMZ.</p>
+      <div style="margin-top:12px;">
+        <strong>Acceptance Criteria:</strong>
+        <ul style="margin-left:20px; margin-top:4px;">
+<li>Given a client connecting without a client certificate, when TLS handshake occurs, then the connection is immediately aborted with SSL_CERTIFICATE_REQUIRED.</li><li>Given a valid cert signed by Corporate CA, when handshake succeeds, then client CN and SAN are extracted into request context headers.</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px;">
+        <strong>Revision History & Audit Trail:</strong>
+
+        <div style="background:#131c31; border-left:3px solid var(--accent-cyan); padding:8px 12px; margin-top:8px; border-radius:4px; font-size:12px;">
+          <div><strong>v1 [CREATED]</strong> by Elena Voronova (Security Architect) at 2026-10-07T13:06:22Z</div>
+          <div style="color:var(--text-muted); margin-top:2px;">Justification: Initial baseline draft from business intent</div>
+          
+        </div>
+
+        <div style="background:#131c31; border-left:3px solid var(--accent-cyan); padding:8px 12px; margin-top:8px; border-radius:4px; font-size:12px;">
+          <div><strong>v2 [MODIFIED]</strong> by Dmitry Petrov (Head of Corporate Audit) at 2026-10-07T13:06:22Z</div>
+          <div style="color:var(--text-muted); margin-top:2px;">Justification: Clarified rejection phase (must occur strictly at TLS handshake stage to prevent DoS).</div>
+          <pre class="diff-container">--- v1
++++ v2
+@@ -1 +1 @@
+-The gateway must enforce client certificate validation against the Corporate CA.
++The gateway must enforce bidirectional mTLS with client certificate validation against the Corporate Root CA. Connections without valid certificates must be rejected at TLS handshake.</pre>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">5. Clarification Q&A Loop</h2>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Linked Req</th><th>Question</th><th>Asked By</th><th>Status</th><th>Resolution / Answer</th></tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><strong>CLAR-001</strong></td>
+          <td>REQ-SEC-001</td>
+          <td>What happens if an internal client certificate is revoked via CRL or OCSP in an air-gapped environment without internet access?</td>
+          <td>Alexander Smirnov (Lead Backend Engineer)</td>
+          <td><span class="badge">RESOLVED</span></td>
+          <td>Revocation lists will be loaded from a pre-synced local SQLite/file cache updated daily via internal corporate admin bundle.</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">6. Activity Audit Ledger</h2>
+    <table>
+      <thead>
+        <tr><th>Timestamp</th><th>Action</th><th>Target</th><th>Actor</th><th>Details</th></tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:10:32Z</td>
+          <td><span class="badge">CREATED</span></td>
+          <td>TASK-004</td>
+          <td>Architect (Tech Lead)</td>
+          <td>Decomposed TASK-004 from REQ-PERF-004: Benchmark splice/sendfile socket pump</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:10:17Z</td>
+          <td><span class="badge">CREATED</span></td>
+          <td>REQ-PERF-004</td>
+          <td>Visual Craftsman (Performance Lead)</td>
+          <td>Created REQ-PERF-004 v1: Zero-Copy Direct Socket Proxying</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:06:22Z</td>
+          <td><span class="badge">MODIFIED</span></td>
+          <td>REQ-SEC-001</td>
+          <td>Dmitry Petrov (Head of Corporate Audit)</td>
+          <td>Amended v2 with strict TLS handshake abort requirement</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:06:22Z</td>
+          <td><span class="badge">RESOLVED</span></td>
+          <td>CLAR-001</td>
+          <td>Elena Voronova (Chief Security Architect)</td>
+          <td>Resolved offline CRL cache mechanism</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:06:22Z</td>
+          <td><span class="badge">CREATED</span></td>
+          <td>REQ-LOG-002</td>
+          <td>Mikhail Sidorov (Compliance Officer)</td>
+          <td>Created v1 draft for audit trail</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:06:22Z</td>
+          <td><span class="badge">CREATED</span></td>
+          <td>REQ-SEC-001</td>
+          <td>Elena Voronova (Chief Security Architect)</td>
+          <td>Created v1 draft for mTLS validation</td>
+        </tr>
+
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px;">2026-10-07T13:06:22Z</td>
+          <td><span class="badge">CREATED</span></td>
+          <td>proj-airgap-gateway</td>
+          <td>Elena Voronova (Chief Security Architect)</td>
+          <td>Project initialized with Air-Gapped Security Constitution</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Embedded Project Data
+window.__SPECKIT_DATA__ = {
+  "project": {
+    "id": "proj-airgap-gateway",
+    "title": "Corporate Air-Gapped Secure Gateway",
+    "intent": "Build an internal Corporate Air-Gapped API Gateway that runs on enterprise intranet servers with zero internet egress, strict mTLS client certificate authentication, full request tracing, and real-time tampering-resistant audit logging compliant with ISO-27001.",
+    "constitution": "# Enterprise Security Constitution (v1.4)\n\n1. **Zero External Egress**: No requests may exit internal network 10.0.0.0/8.\n2. **Cryptographic Integrity**: All credentials and tokens must use hardware HSM or AES-256-GCM.\n3. **Zero-Dependency Core**: Runtime components must execute without unverified external package repositories (pip/npm).\n4. **Audit Traceability**: Every API invocation must produce an immutable audit log entry within 5ms.",
+    "status": "APPROVED",
+    "created_at": "2026-10-07T13:06:22Z",
+    "updated_at": "2026-10-07T13:06:22Z"
+  },
+  "requirements": [
+    {
+      "id": "REQ-LOG-002",
+      "spec_id": "proj-airgap-gateway",
+      "category": "COMPLIANCE",
+      "title": "Tamper-Evident SHA-256 Audit Trail",
+      "description": "Every incoming request and outbound proxy dispatch must be logged with timestamp, client fingerprint, route, status code, and a chained SHA-256 hash verifying log integrity.",
+      "rationale": "Required by internal corporate compliance and ISO-27001 audit standards.",
+      "acceptance_criteria": [
+        "Each log entry includes previous_hash, computing chained integrity.",
+        "Log buffer writes synchronously to local disk before returning HTTP 200/204 to client."
+      ],
+      "status": "ACCEPTED",
+      "current_version": 1,
+      "created_by": "Mikhail Sidorov",
+      "created_role": "Compliance Officer",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    },
+    {
+      "id": "REQ-PERF-004",
+      "spec_id": "proj-airgap-gateway",
+      "category": "PERFORMANCE",
+      "title": "Zero-Copy Direct Socket Proxying",
+      "description": "The gateway must utilize zero-copy memory buffers for proxy stream forwarding.",
+      "rationale": "Minimizes CPU cache thrashing during 10Gbps line-rate forwarding.",
+      "acceptance_criteria": [
+        "Forwarding throughput must exceed 9.5 Gbps with under 1ms P99 jitter."
+      ],
+      "status": "PROPOSED",
+      "current_version": 1,
+      "created_by": "Visual Craftsman",
+      "created_role": "Performance Lead",
+      "created_at": "2026-10-07T13:10:17Z",
+      "updated_at": "2026-10-07T13:10:17Z"
+    },
+    {
+      "id": "REQ-RT-003",
+      "spec_id": "proj-airgap-gateway",
+      "category": "FUNCTIONAL",
+      "title": "Dynamic In-Memory Routing Table with Health Checks",
+      "description": "Gateway routes incoming HTTP requests to backend microservices based on prefix matches with passive circuit breaker failover if upstream 5xx rate exceeds 10%.",
+      "rationale": "Ensures high availability without requiring external Consul or etcd cluster.",
+      "acceptance_criteria": [
+        "Route lookup latency must be under 0.5ms for 1000 registered endpoints.",
+        "Circuit breaker trips to OPEN on 3 consecutive 502/504 errors, failing fast without blocking."
+      ],
+      "status": "ACCEPTED",
+      "current_version": 1,
+      "created_by": "Alexander Smirnov",
+      "created_role": "Lead Backend Engineer",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    },
+    {
+      "id": "REQ-SEC-001",
+      "spec_id": "proj-airgap-gateway",
+      "category": "SECURITY",
+      "title": "Strict Mutual TLS (mTLS) Authentication",
+      "description": "The gateway must enforce bidirectional mTLS with client certificate validation against the Corporate Root CA. Connections without valid certificates must be rejected at TLS handshake.",
+      "rationale": "Prevents spoofing and unauthorized network access inside corporate DMZ.",
+      "acceptance_criteria": [
+        "Given a client connecting without a client certificate, when TLS handshake occurs, then the connection is immediately aborted with SSL_CERTIFICATE_REQUIRED.",
+        "Given a valid cert signed by Corporate CA, when handshake succeeds, then client CN and SAN are extracted into request context headers."
+      ],
+      "status": "ACCEPTED",
+      "current_version": 2,
+      "created_by": "Elena Voronova",
+      "created_role": "Chief Security Architect",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    }
+  ],
+  "revisions": {
+    "REQ-LOG-002": [],
+    "REQ-PERF-004": [
+      {
+        "id": 3,
+        "req_id": "REQ-PERF-004",
+        "version": 1,
+        "title": "Zero-Copy Direct Socket Proxying",
+        "description": "The gateway must utilize zero-copy memory buffers for proxy stream forwarding.",
+        "rationale": "Minimizes CPU cache thrashing during 10Gbps line-rate forwarding.",
+        "acceptance_criteria": [
+          "Forwarding throughput must exceed 9.5 Gbps with under 1ms P99 jitter."
+        ],
+        "category": "PERFORMANCE",
+        "status": "PROPOSED",
+        "author_name": "Visual Craftsman",
+        "author_role": "Performance Lead",
+        "change_type": "CREATED",
+        "justification": "Throughput optimization",
+        "diff_unified": null,
+        "timestamp": "2026-10-07T13:10:17Z"
+      }
+    ],
+    "REQ-RT-003": [],
+    "REQ-SEC-001": [
+      {
+        "id": 1,
+        "req_id": "REQ-SEC-001",
+        "version": 1,
+        "title": "Strict Mutual TLS (mTLS) Authentication",
+        "description": "The gateway must enforce client certificate validation against the Corporate CA.",
+        "rationale": "Prevents unauthorized network access.",
+        "acceptance_criteria": [
+          "Clients must present a certificate during TLS handshake."
+        ],
+        "category": "SECURITY",
+        "status": "PROPOSED",
+        "author_name": "Elena Voronova",
+        "author_role": "Security Architect",
+        "change_type": "CREATED",
+        "justification": "Initial baseline draft from business intent",
+        "diff_unified": null,
+        "timestamp": "2026-10-07T13:06:22Z"
+      },
+      {
+        "id": 2,
+        "req_id": "REQ-SEC-001",
+        "version": 2,
+        "title": "Strict Mutual TLS (mTLS) Authentication",
+        "description": "The gateway must enforce bidirectional mTLS with client certificate validation against the Corporate Root CA. Connections without valid certificates must be rejected at TLS handshake.",
+        "rationale": "Prevents spoofing and unauthorized network access inside corporate DMZ.",
+        "acceptance_criteria": [
+          "Given a client connecting without a client certificate, when TLS handshake occurs, then the connection is immediately aborted with SSL_CERTIFICATE_REQUIRED.",
+          "Given a valid cert signed by Corporate CA, when handshake succeeds, then client CN and SAN are extracted into request context headers."
+        ],
+        "category": "SECURITY",
+        "status": "AUGMENTED",
+        "author_name": "Dmitry Petrov",
+        "author_role": "Head of Corporate Audit",
+        "change_type": "MODIFIED",
+        "justification": "Clarified rejection phase (must occur strictly at TLS handshake stage to prevent DoS).",
+        "diff_unified": "--- v1\n+++ v2\n@@ -1 +1 @@\n-The gateway must enforce client certificate validation against the Corporate CA.\n+The gateway must enforce bidirectional mTLS with client certificate validation against the Corporate Root CA. Connections without valid certificates must be rejected at TLS handshake.",
+        "timestamp": "2026-10-07T13:06:22Z"
+      }
+    ]
+  },
+  "clarifications": [
+    {
+      "id": "CLAR-001",
+      "spec_id": "proj-airgap-gateway",
+      "req_id": "REQ-SEC-001",
+      "question": "What happens if an internal client certificate is revoked via CRL or OCSP in an air-gapped environment without internet access?",
+      "asked_by": "Alexander Smirnov",
+      "asked_role": "Lead Backend Engineer",
+      "answer": "Revocation lists will be loaded from a pre-synced local SQLite/file cache updated daily via internal corporate admin bundle.",
+      "answered_by": "Elena Voronova",
+      "answered_role": "Chief Security Architect",
+      "status": "RESOLVED",
+      "created_at": "2026-10-07T13:06:22Z",
+      "resolved_at": "2026-10-07T13:06:22Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "spec_id": "proj-airgap-gateway",
+      "req_id": "REQ-SEC-001",
+      "title": "Implement SSLContext with ssl.CERT_REQUIRED and local CA bundle verification",
+      "description": "Configure standard Python ssl socket wrapper with client cert validation.",
+      "assignee": "Dev Team",
+      "status": "DONE",
+      "test_case_id": "TEST-MTLS-01",
+      "code_targets": "sec_gateway/tls.py:wrap_socket",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    },
+    {
+      "id": "TASK-002",
+      "spec_id": "proj-airgap-gateway",
+      "req_id": "REQ-LOG-002",
+      "title": "Implement chained SHA-256 rolling digest log writer",
+      "description": "Zero-dependency write loop with atomic flush.",
+      "assignee": "Dev Team",
+      "status": "DONE",
+      "test_case_id": "TEST-LOG-02",
+      "code_targets": "sec_gateway/audit.py:write_audit_entry",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    },
+    {
+      "id": "TASK-003",
+      "spec_id": "proj-airgap-gateway",
+      "req_id": "REQ-RT-003",
+      "title": "Implement non-blocking in-memory prefix trie router with circuit breaker",
+      "description": "Fast URL matching with consecutive error counter.",
+      "assignee": "Dev Team",
+      "status": "IN_PROGRESS",
+      "test_case_id": "TEST-RT-03",
+      "code_targets": "sec_gateway/router.py:resolve_route",
+      "created_at": "2026-10-07T13:06:22Z",
+      "updated_at": "2026-10-07T13:06:22Z"
+    },
+    {
+      "id": "TASK-004",
+      "spec_id": "proj-airgap-gateway",
+      "req_id": "REQ-PERF-004",
+      "title": "Benchmark splice/sendfile socket pump",
+      "description": "Kernel socket splice implementation",
+      "assignee": "Dev Team",
+      "status": "TODO",
+      "test_case_id": "TEST-PERF-04",
+      "code_targets": "sec_gateway/pump.py",
+      "created_at": "2026-10-07T13:10:32Z",
+      "updated_at": "2026-10-07T13:10:32Z"
+    }
+  ],
+  "matrix": {
+    "matrix": [
+      {
+        "req_id": "REQ-LOG-002",
+        "title": "Tamper-Evident SHA-256 Audit Trail",
+        "category": "COMPLIANCE",
+        "version": 1,
+        "status": "ACCEPTED",
+        "author": "Mikhail Sidorov (Compliance Officer)",
+        "clarifications": [],
+        "tasks": [
+          {
+            "id": "TASK-002",
+            "title": "Implement chained SHA-256 rolling digest log writer",
+            "status": "DONE",
+            "assignee": "Dev Team"
+          }
+        ],
+        "tests": [
+          "TEST-LOG-02"
+        ],
+        "code_targets": [
+          "sec_gateway/audit.py:write_audit_entry"
+        ],
+        "coverage_pct": 100,
+        "is_complete": true
+      },
+      {
+        "req_id": "REQ-PERF-004",
+        "title": "Zero-Copy Direct Socket Proxying",
+        "category": "PERFORMANCE",
+        "version": 1,
+        "status": "PROPOSED",
+        "author": "Visual Craftsman (Performance Lead)",
+        "clarifications": [],
+        "tasks": [
+          {
+            "id": "TASK-004",
+            "title": "Benchmark splice/sendfile socket pump",
+            "status": "TODO",
+            "assignee": "Dev Team"
+          }
+        ],
+        "tests": [
+          "TEST-PERF-04"
+        ],
+        "code_targets": [
+          "sec_gateway/pump.py"
+        ],
+        "coverage_pct": 100,
+        "is_complete": true
+      },
+      {
+        "req_id": "REQ-RT-003",
+        "title": "Dynamic In-Memory Routing Table with Health Checks",
+        "category": "FUNCTIONAL",
+        "version": 1,
+        "status": "ACCEPTED",
+        "author": "Alexander Smirnov (Lead Backend Engineer)",
+        "clarifications": [],
+        "tasks": [
+          {
+            "id": "TASK-003",
+            "title": "Implement non-blocking in-memory prefix trie router with circuit breaker",
+            "status": "IN_PROGRESS",
+            "assignee": "Dev Team"
+          }
+        ],
+        "tests": [
+          "TEST-RT-03"
+        ],
+        "code_targets": [
+          "sec_gateway/router.py:resolve_route"
+        ],
+        "coverage_pct": 100,
+        "is_complete": true
+      },
+      {
+        "req_id": "REQ-SEC-001",
+        "title": "Strict Mutual TLS (mTLS) Authentication",
+        "category": "SECURITY",
+        "version": 2,
+        "status": "ACCEPTED",
+        "author": "Elena Voronova (Chief Security Architect)",
+        "clarifications": [
+          {
+            "id": "CLAR-001",
+            "question": "What happens if an internal client certificate is revoked via CRL or OCSP in an air-gapped environment without internet access?",
+            "status": "RESOLVED"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "TASK-001",
+            "title": "Implement SSLContext with ssl.CERT_REQUIRED and local CA bundle verification",
+            "status": "DONE",
+            "assignee": "Dev Team"
+          }
+        ],
+        "tests": [
+          "TEST-MTLS-01"
+        ],
+        "code_targets": [
+          "sec_gateway/tls.py:wrap_socket"
+        ],
+        "coverage_pct": 100,
+        "is_complete": true
+      }
+    ],
+    "total_requirements": 4,
+    "total_tasks": 4,
+    "orphan_requirements": [],
+    "overall_coverage_pct": 100
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "node-intent",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "INTENT",
+        "entity_id": "intent",
+        "label": "Business Need: Air-Gapped Secure Gateway",
+        "meta_json": "{\"source\": \"CEO / Security Board Directive\"}"
+      },
+      {
+        "id": "node-const",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "CONSTITUTION",
+        "entity_id": "constitution",
+        "label": "Constitution: Zero-Egress & Integrity",
+        "meta_json": "{\"rules\": 4}"
+      },
+      {
+        "id": "node-req-sec",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "REQUIREMENT",
+        "entity_id": "REQ-SEC-001",
+        "label": "REQ-SEC-001: Strict mTLS Auth (v2)",
+        "meta_json": "{\"category\": \"SECURITY\", \"author\": \"Elena Voronova\"}"
+      },
+      {
+        "id": "node-req-log",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "REQUIREMENT",
+        "entity_id": "REQ-LOG-002",
+        "label": "REQ-LOG-002: Chained SHA-256 Audit",
+        "meta_json": "{\"category\": \"COMPLIANCE\", \"author\": \"Mikhail Sidorov\"}"
+      },
+      {
+        "id": "node-req-rt",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "REQUIREMENT",
+        "entity_id": "REQ-RT-003",
+        "label": "REQ-RT-003: In-Memory Router & Breaker",
+        "meta_json": "{\"category\": \"FUNCTIONAL\", \"author\": \"Alexander Smirnov\"}"
+      },
+      {
+        "id": "node-clar-01",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "CLARIFICATION",
+        "entity_id": "CLAR-001",
+        "label": "CLAR-001: Air-gapped CRL/OCSP offline cache",
+        "meta_json": "{\"status\": \"RESOLVED\"}"
+      },
+      {
+        "id": "node-task-01",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "TASK",
+        "entity_id": "TASK-001",
+        "label": "TASK-001: TLS Socket Wrapper",
+        "meta_json": "{\"status\": \"DONE\"}"
+      },
+      {
+        "id": "node-test-01",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "TEST",
+        "entity_id": "TEST-MTLS-01",
+        "label": "TEST-MTLS-01: Handshake Abort on Missing Cert",
+        "meta_json": "{\"type\": \"Unit & Integration\"}"
+      },
+      {
+        "id": "node-code-01",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "CODE",
+        "entity_id": "sec_gateway/tls.py",
+        "label": "CODE: sec_gateway/tls.py#L42",
+        "meta_json": "{\"symbol\": \"wrap_socket\"}"
+      },
+      {
+        "id": "node-REQ-PERF-004",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "REQUIREMENT",
+        "entity_id": "REQ-PERF-004",
+        "label": "REQ-PERF-004: Zero-Copy Direct Socket Proxying (v1)",
+        "meta_json": "{\"category\": \"PERFORMANCE\", \"author\": \"Visual Craftsman\", \"role\": \"Performance Lead\"}"
+      },
+      {
+        "id": "node-TASK-004",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "TASK",
+        "entity_id": "TASK-004",
+        "label": "TASK-004: Benchmark splice/sendfile socket pump",
+        "meta_json": "{\"status\": \"TODO\", \"req_id\": \"REQ-PERF-004\"}"
+      },
+      {
+        "id": "node-TEST-PERF-04",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "TEST",
+        "entity_id": "TEST-PERF-04",
+        "label": "TEST: TEST-PERF-04",
+        "meta_json": "{}"
+      },
+      {
+        "id": "node-sec_gateway_pump.py",
+        "spec_id": "proj-airgap-gateway",
+        "node_type": "CODE",
+        "entity_id": "sec_gateway/pump.py",
+        "label": "CODE: sec_gateway/pump.py",
+        "meta_json": "{}"
+      }
+    ],
+    "edges": [
+      {
+        "id": 1,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-intent",
+        "to_node_id": "node-req-sec",
+        "relation": "DERIVED_FROM"
+      },
+      {
+        "id": 2,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-intent",
+        "to_node_id": "node-req-log",
+        "relation": "DERIVED_FROM"
+      },
+      {
+        "id": 3,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-intent",
+        "to_node_id": "node-req-rt",
+        "relation": "DERIVED_FROM"
+      },
+      {
+        "id": 4,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-const",
+        "to_node_id": "node-req-sec",
+        "relation": "CONSTRAINED_BY"
+      },
+      {
+        "id": 5,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-const",
+        "to_node_id": "node-req-log",
+        "relation": "CONSTRAINED_BY"
+      },
+      {
+        "id": 6,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-req-sec",
+        "to_node_id": "node-clar-01",
+        "relation": "CLARIFIED_BY"
+      },
+      {
+        "id": 7,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-req-sec",
+        "to_node_id": "node-task-01",
+        "relation": "IMPLEMENTS"
+      },
+      {
+        "id": 8,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-task-01",
+        "to_node_id": "node-test-01",
+        "relation": "VERIFIES"
+      },
+      {
+        "id": 9,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-task-01",
+        "to_node_id": "node-code-01",
+        "relation": "PRODUCES"
+      },
+      {
+        "id": 10,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-intent",
+        "to_node_id": "node-REQ-PERF-004",
+        "relation": "DERIVED_FROM"
+      },
+      {
+        "id": 11,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-REQ-PERF-004",
+        "to_node_id": "node-TASK-004",
+        "relation": "IMPLEMENTS"
+      },
+      {
+        "id": 12,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-TASK-004",
+        "to_node_id": "node-TEST-PERF-04",
+        "relation": "VERIFIES"
+      },
+      {
+        "id": 13,
+        "spec_id": "proj-airgap-gateway",
+        "from_node_id": "node-TASK-004",
+        "to_node_id": "node-sec_gateway_pump.py",
+        "relation": "PRODUCES"
+      }
+    ]
+  },
+  "audits": [
+    {
+      "id": 7,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "TASK",
+      "entity_id": "TASK-004",
+      "action": "CREATED",
+      "actor_name": "Architect",
+      "actor_role": "Tech Lead",
+      "details": "Decomposed TASK-004 from REQ-PERF-004: Benchmark splice/sendfile socket pump",
+      "timestamp": "2026-10-07T13:10:32Z",
+      "prev_hash": "ad6b0c5a9a60ad97e2608d9665e7de435af16425ae1bddabadee57221c2d69f7",
+      "entry_hash": "a5e3739a5cd507236cc4e47677579c57533bd2c126a9ea3570720fe9d45fc78d"
+    },
+    {
+      "id": 6,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "REQUIREMENT",
+      "entity_id": "REQ-PERF-004",
+      "action": "CREATED",
+      "actor_name": "Visual Craftsman",
+      "actor_role": "Performance Lead",
+      "details": "Created REQ-PERF-004 v1: Zero-Copy Direct Socket Proxying",
+      "timestamp": "2026-10-07T13:10:17Z",
+      "prev_hash": "ec374c9a34354cbfdc7fae1bedfdaeb6a2ebbde5e2ae27513f00b6520d801b5a",
+      "entry_hash": "ad6b0c5a9a60ad97e2608d9665e7de435af16425ae1bddabadee57221c2d69f7"
+    },
+    {
+      "id": 5,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "REQUIREMENT",
+      "entity_id": "REQ-SEC-001",
+      "action": "MODIFIED",
+      "actor_name": "Dmitry Petrov",
+      "actor_role": "Head of Corporate Audit",
+      "details": "Amended v2 with strict TLS handshake abort requirement",
+      "timestamp": "2026-10-07T13:06:22Z",
+      "prev_hash": "898cc7785ea8ceacb28b4645db1c605b8b961a8f9bb0177c23dafc61782b6074",
+      "entry_hash": "ec374c9a34354cbfdc7fae1bedfdaeb6a2ebbde5e2ae27513f00b6520d801b5a"
+    },
+    {
+      "id": 4,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "CLARIFICATION",
+      "entity_id": "CLAR-001",
+      "action": "RESOLVED",
+      "actor_name": "Elena Voronova",
+      "actor_role": "Chief Security Architect",
+      "details": "Resolved offline CRL cache mechanism",
+      "timestamp": "2026-10-07T13:06:22Z",
+      "prev_hash": "8b5ea8c31814530464b5f635f2041c3f196ee405020b726627222287894b6bda",
+      "entry_hash": "898cc7785ea8ceacb28b4645db1c605b8b961a8f9bb0177c23dafc61782b6074"
+    },
+    {
+      "id": 3,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "REQUIREMENT",
+      "entity_id": "REQ-LOG-002",
+      "action": "CREATED",
+      "actor_name": "Mikhail Sidorov",
+      "actor_role": "Compliance Officer",
+      "details": "Created v1 draft for audit trail",
+      "timestamp": "2026-10-07T13:06:22Z",
+      "prev_hash": "eca3fb8066b2dcb24cdafd338b696cc204f777ff1a741136383a61783eed72d2",
+      "entry_hash": "8b5ea8c31814530464b5f635f2041c3f196ee405020b726627222287894b6bda"
+    },
+    {
+      "id": 2,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "REQUIREMENT",
+      "entity_id": "REQ-SEC-001",
+      "action": "CREATED",
+      "actor_name": "Elena Voronova",
+      "actor_role": "Chief Security Architect",
+      "details": "Created v1 draft for mTLS validation",
+      "timestamp": "2026-10-07T13:06:22Z",
+      "prev_hash": "2976eb8329959630a183d4dafc1f60bc7d21f012131cd5315194527281220642",
+      "entry_hash": "eca3fb8066b2dcb24cdafd338b696cc204f777ff1a741136383a61783eed72d2"
+    },
+    {
+      "id": 1,
+      "spec_id": "proj-airgap-gateway",
+      "entity_type": "PROJECT",
+      "entity_id": "proj-airgap-gateway",
+      "action": "CREATED",
+      "actor_name": "Elena Voronova",
+      "actor_role": "Chief Security Architect",
+      "details": "Project initialized with Air-Gapped Security Constitution",
+      "timestamp": "2026-10-07T13:06:22Z",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "entry_hash": "2976eb8329959630a183d4dafc1f60bc7d21f012131cd5315194527281220642"
+    }
+  ]
+};
+</script>
+</body>
+</html>
