@@ -14,10 +14,20 @@ class AIBridge:
         self.db = db
 
     def get_config(self) -> Dict[str, str]:
+        import os
+        # Priority: DB setting (if set and non-empty) -> Environment variable -> Default
+        db_endpoint = self.db.get_setting("ai_endpoint", "")
+        db_key = self.db.get_setting("ai_api_key", "")
+        db_model = self.db.get_setting("ai_model", "")
+
+        endpoint = db_endpoint or os.getenv("LLM_API_BASE") or os.getenv("OPENAI_BASE_URL") or "https://chat.hamaryal.ru/v1"
+        api_key = db_key or os.getenv("LLM_API_KEY") or os.getenv("PROXY_TOKEN") or ""
+        model = db_model or os.getenv("LLM_MODEL") or "euromodels/claude-opus-4.8"
+
         return {
-            "endpoint": self.db.get_setting("ai_endpoint", "http://localhost:11434/v1"),
-            "api_key": self.db.get_setting("ai_api_key", ""),
-            "model": self.db.get_setting("ai_model", "llama3")
+            "endpoint": endpoint,
+            "api_key": api_key,
+            "model": model
         }
 
     def _call_llm(self, prompt: str, system_prompt: str = "") -> Optional[str]:
