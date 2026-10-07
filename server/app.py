@@ -24,6 +24,7 @@ class SpecKitRequestHandler(SimpleHTTPRequestHandler):
     sync: MarkdownSync = None
     ai: AIBridge = None
     modules: ModuleManager = None
+    harness: Any = None
     static_dir: str = ""
 
     def __init__(self, *args, **kwargs):
@@ -209,6 +210,55 @@ class SpecKitRequestHandler(SimpleHTTPRequestHandler):
             self._send_json(200, cfg)
             return
 
+        # Harness Pipeline Endpoints
+        if path == "/api/harness/pipelines":
+            if not self.harness:
+                self._send_json(503, {"error": "B2B Harness engine is not initialized"})
+                return
+            runs = self.harness.list_pipelines()
+            self._send_json(200, {"pipelines": runs})
+            return
+
+        if path.startswith("/api/harness/pipeline/"):
+            if not self.harness:
+                self._send_json(503, {"error": "B2B Harness engine is not initialized"})
+                return
+            parts = path.strip("/").split("/")
+            # parts: ['api', 'harness', 'pipeline', '{pipeline_id}', '{sub_action}?']
+            if len(parts) >= 4:
+                pipe_id = parts[3]
+                sub_action = parts[4] if len(parts) > 4 else "state"
+
+                if sub_action == "state":
+                    try:
+                        state = self.harness.get_pipeline_state(pipe_id)
+                        self._send_json(200, state)
+                    except ValueError as e:
+                        self._send_json(404, {"error": str(e)})
+                    return
+
+                if sub_action == "messages":
+                    msgs = self.harness.get_a2a_messages(pipe_id)
+                    self._send_json(200, {"messages": msgs})
+                    return
+
+                if sub_action == "artifacts":
+                    arts = self.harness.list_artifacts(pipe_id)
+                    self._send_json(200, {"artifacts": arts})
+                    return
+
+                if sub_action == "artifact":
+                    art_name = query.get("name", [""])[0]
+                    if not art_name:
+                        self._send_json(400, {"error": "Artifact name required via ?name=..."})
+                        return
+                    content = self.harness.get_artifact(pipe_id, art_name)
+                    if content is None:
+                        self._send_json(404, {"error": f"Artifact {art_name} not found"})
+                        return
+                    self._send_json(200, {"name": art_name, "content": content})
+                    return
+
         self._send_json(404, {"error": f"Endpoint not found: {path}"})
 
     def _handle_api_post(self, path: str):
@@ -324,6 +374,55 @@ class SpecKitRequestHandler(SimpleHTTPRequestHandler):
                     self.db.set_setting(k, payload[k])
             self._send_json(200, {"status": "updated"})
             return
+
+        # Harness Pipeline Actions
+        if path == "/api/harness/pipeline/start":
+            if not self.harness:
+                self._send_json(503, {"error": "B2B Harness engine is not initialized"})
+                return
+            project_name = payload.get("project_name", "PoC Normalization Project")
+            input_path = payload.get("input_path", "workspace")
+            initial_idea = payload.get("initial_idea", "")
+            pipe_id = self.harness.init_pipeline(project_name, input_path, initial_idea)
+            state = self.harness.get_pipeline_state(pipe_id)
+            self._send_json(201, {"status": "ok", "pipeline_id": pipe_id, "state": state})
+            return
+
+        if path.startswith("/api/harness/pipeline/"):
+            if not self.harness:
+                self._send_json(503, {"error": "B2B Harness engine is not initialized"})
+                return
+            parts = path.strip("/").split("/")
+            # parts: ['api', 'harness', 'pipeline', '{pipeline_id}', '{sub_action}']
+            if len(parts) >= 5:
+                pipe_id = parts[3]
+                sub_action = parts[4]
+
+                if sub_action == "step":
+                    try:
+                        res = self.harness.step(pipe_id)
+                        state = self.harness.get_pipeline_state(pipe_id)
+                        self._send_json(200, {"result": res, "state": state})
+                    except Exception as e:
+                        self._send_json(400, {"error": str(e)})
+                    return
+
+                if sub_action == "run":
+                    try:
+                        final_state = self.harness.run_until_pause(pipe_id)
+                        self._send_json(200, {"status": "paused_or_completed", "state": final_state})
+                    except Exception as e:
+                        self._send_json(400, {"error": str(e)})
+                    return
+
+                if sub_action == "resolve_gate":
+                    try:
+                        res = self.harness.resume_pipeline(pipe_id, payload)
+                        state = self.harness.get_pipeline_state(pipe_id)
+                        self._send_json(200, {"result": res, "state": state})
+                    except Exception as e:
+                        self._send_json(400, {"error": str(e)})
+                    return
 
         self._send_json(404, {"error": f"Endpoint not found: {path}"})
 

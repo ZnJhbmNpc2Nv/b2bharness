@@ -34,6 +34,7 @@ from server.lineage import LineageEngine
 from server.markdown_sync import MarkdownSync
 from server.ai_bridge import AIBridge
 from server.app import SpecKitRequestHandler
+from b2b_harness.orchestrator import B2BHarnessOrchestrator
 
 
 # ==============================================================================
@@ -625,12 +626,17 @@ class TestHttpServer(unittest.TestCase):
         cls.lineage = LineageEngine(cls.db)
         cls.sync = MarkdownSync(cls.db, output_base_dir=cls.temp_dir)
         cls.ai = AIBridge(cls.db)
+        cls.harness = B2BHarnessOrchestrator(
+            db_path=os.path.join(cls.temp_dir, "test_harness_pipe.db"),
+            storage_root=os.path.join(cls.temp_dir, "pipes")
+        )
 
         # Inject into SpecKitRequestHandler
         SpecKitRequestHandler.db = cls.db
         SpecKitRequestHandler.lineage = cls.lineage
         SpecKitRequestHandler.sync = cls.sync
         SpecKitRequestHandler.ai = cls.ai
+        SpecKitRequestHandler.harness = cls.harness
         SpecKitRequestHandler.static_dir = cls.static_dir
 
         # Bind to ephemeral port 0
@@ -866,6 +872,52 @@ class TestHttpServer(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("tasks", tasks_res)
         self.assertGreaterEqual(len(tasks_res["tasks"]), 2)
+
+    def test_harness_api_endpoints(self):
+        """Verify B2B Harness pipeline REST endpoints: start, list, state, step, messages, artifacts."""
+        # 1. Start pipeline
+        status, start_res = self._http_request("POST", "/api/harness/pipeline/start", {
+            "project_name": "REST Test Pipeline",
+            "input_path": self.temp_dir,
+            "initial_idea": "Build high-integrity REST payment validator"
+        })
+        self.assertEqual(status, 201)
+        self.assertIn("pipeline_id", start_res)
+        pipe_id = start_res["pipeline_id"]
+
+        # 2. List pipelines
+        status, list_res = self._http_request("GET", "/api/harness/pipelines")
+        self.assertEqual(status, 200)
+        self.assertIn("pipelines", list_res)
+        self.assertTrue(any(p["pipeline_id"] == pipe_id for p in list_res["pipelines"]))
+
+        # 3. Get pipeline state
+        status, state_res = self._http_request("GET", f"/api/harness/pipeline/{pipe_id}/state")
+        self.assertEqual(status, 200)
+        self.assertEqual(state_res["pipeline_id"], pipe_id)
+        self.assertEqual(state_res["current_stage"], "PRE_SDD")
+
+        # 4. Step pipeline (PRE_SDD -> SDD_INTENT)
+        status, step_res = self._http_request("POST", f"/api/harness/pipeline/{pipe_id}/step")
+        self.assertEqual(status, 200)
+        self.assertIn("result", step_res)
+
+        # 5. Get A2A messages
+        status, msg_res = self._http_request("GET", f"/api/harness/pipeline/{pipe_id}/messages")
+        self.assertEqual(status, 200)
+        self.assertIn("messages", msg_res)
+        self.assertGreaterEqual(len(msg_res["messages"]), 1)
+
+        # 6. List and read artifacts
+        status, art_res = self._http_request("GET", f"/api/harness/pipeline/{pipe_id}/artifacts")
+        self.assertEqual(status, 200)
+        self.assertIn("artifacts", art_res)
+        self.assertIn("discovery.md", art_res["artifacts"])
+
+        status, single_art = self._http_request("GET", f"/api/harness/pipeline/{pipe_id}/artifact?name=discovery.md")
+        self.assertEqual(status, 200)
+        self.assertIn("content", single_art)
+        self.assertIn("Discovery Dossier", single_art["content"])
 
 
 # ==============================================================================

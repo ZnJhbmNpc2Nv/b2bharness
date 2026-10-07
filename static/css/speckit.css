@@ -692,3 +692,74 @@ main.main-content {
 .diff-unified-line.ctx {
   color: #94a3b8;
 }
+
+/* B2B Harness Pipeline Cockpit */
+.pipeline-stages-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.stage-step-card {
+  background: rgba(16, 23, 41, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stage-step-card:hover {
+  background: rgba(22, 32, 58, 0.95);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.stage-step-card.active {
+  border-color: var(--purple);
+  background: rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+}
+.stage-step-card.completed {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.stage-step-card.running {
+  border-color: rgba(6, 182, 212, 0.8);
+  animation: pulse-border 1.5s infinite;
+}
+.stage-step-card.awaiting {
+  border-color: rgba(245, 158, 11, 0.8);
+  animation: pulse-amber 1.5s infinite;
+}
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(6, 182, 212, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+}
+@keyframes pulse-amber {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.subtab-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.subtab-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.subtab-btn.active {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  font-weight: 600;
+}
+

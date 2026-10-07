@@ -23,6 +23,7 @@ from server.markdown_sync import MarkdownSync
 from server.ai_bridge import AIBridge
 from server.app import SpecKitRequestHandler
 from modules.manager import ModuleManager
+from b2b_harness.orchestrator import B2BHarnessOrchestrator
 
 
 BANNER = r"""
@@ -62,6 +63,10 @@ def main():
     lineage = LineageEngine(db, module_manager=modules)
     sync = MarkdownSync(db, output_base_dir=data_dir)
     ai = AIBridge(db)
+    harness = B2BHarnessOrchestrator(
+        db_path=os.path.join(data_dir, "pipeline_runs.db"),
+        storage_root=os.path.join(data_dir, "harness_pipelines")
+    )
 
     # Inject dependencies into request handler
     SpecKitRequestHandler.db = db
@@ -69,6 +74,7 @@ def main():
     SpecKitRequestHandler.sync = sync
     SpecKitRequestHandler.ai = ai
     SpecKitRequestHandler.modules = modules
+    SpecKitRequestHandler.harness = harness
     SpecKitRequestHandler.static_dir = static_dir
 
     server_address = (args.host, args.port)

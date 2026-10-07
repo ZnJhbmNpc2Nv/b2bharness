@@ -36,6 +36,11 @@ class AIBridge:
         api_key = cfg["api_key"]
         model = cfg["model"]
 
+        # Fast offline fallback: if no api_key and remote endpoint, avoid network blocking
+        is_local = any(h in endpoint for h in ("localhost", "127.0.0.1", "0.0.0.0", "192.168."))
+        if not api_key and not is_local:
+            return None
+
         payload = {
             "model": model,
             "messages": [
@@ -55,7 +60,7 @@ class AIBridge:
 
         req = urllib.request.Request(endpoint, data=data_bytes, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=12.0) as resp:
+            with urllib.request.urlopen(req, timeout=5.0) as resp:
                 if resp.status == 200:
                     res_json = json.loads(resp.read().decode("utf-8"))
                     return res_json.get("choices", [{}])[0].get("message", {}).get("content", "")

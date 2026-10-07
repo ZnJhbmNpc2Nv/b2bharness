@@ -207,6 +207,59 @@ class SpecKitApi {
       body: JSON.stringify(data)
     });
   }
+
+  /* ---------------- B2B HARNESS PIPELINE ---------------- */
+
+  async getPipelines() {
+    const data = await this._request('/api/harness/pipelines');
+    return data.pipelines || [];
+  }
+
+  async getPipelineState(pipeId) {
+    return await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/state`);
+  }
+
+  async getPipelineMessages(pipeId) {
+    const data = await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/messages`);
+    return data.messages || [];
+  }
+
+  async getPipelineArtifacts(pipeId) {
+    const data = await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/artifacts`);
+    return data.artifacts || [];
+  }
+
+  async getPipelineArtifact(pipeId, artifactName) {
+    return await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/artifact?name=${encodeURIComponent(artifactName)}`);
+  }
+
+  async startPipeline(data) {
+    return await this._request('/api/harness/pipeline/start', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async stepPipeline(pipeId) {
+    return await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/step`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  }
+
+  async runPipeline(pipeId) {
+    return await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/run`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  }
+
+  async resolvePipelineGate(pipeId, data) {
+    return await this._request(`/api/harness/pipeline/${encodeURIComponent(pipeId)}/resolve_gate`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
 }
 
 // Global instance for browser usage

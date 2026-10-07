@@ -21,6 +21,7 @@ class SpecKitUI {
     this.auditSearchQuery = '';
 
     this.editingReq = null;
+    this.pipeline = new PipelineController(this);
   }
 
   async init() {
@@ -35,6 +36,7 @@ class SpecKitUI {
 
     await this.loadProjects();
     await this.refreshAllData();
+    await this.pipeline.init();
   }
 
   /* ---------------- TOAST NOTIFICATIONS ---------------- */
@@ -191,6 +193,9 @@ class SpecKitUI {
         // Re-fit DAG if switching back to it
         if (targetId === 'tab-dag' && this.dag) {
           this.dag.render();
+        }
+        if (targetId === 'tab-pipeline' && this.pipeline) {
+          this.pipeline.loadPipelines();
         }
       });
     });
@@ -1373,6 +1378,439 @@ class SpecKitUI {
     } catch (err) {
       this.showToast(`AI Task decomposition failed: ${err.message}`, 'error');
     }
+  }
+}
+
+/**
+ * B2B-Harness Multi-Agent Pipeline Controller
+ * Manages 7-stage state machine, interactive DAG progress ribbon, HITL gates, and artifact inspection.
+ */
+class PipelineController {
+  constructor(ui) {
+    this.ui = ui;
+    this.api = ui.api;
+    this.currentPipelineId = null;
+    this.currentPipeline = null;
+    this.activeSubtab = 'cockpit';
+
+    this.stages = [
+      { id: 'PRE_SDD', num: '1', title: 'PRE-SDD', art: 'discovery.md', desc: 'AST Vibe Discovery' },
+      { id: 'SDD_INTENT', num: '2', title: 'SDD-INTENT', art: 'intent.md', desc: 'Goals & Constraints' },
+      { id: 'SDD_SPEC', num: '3', title: 'SDD-SPEC', art: 'spec.md', desc: 'Immutable ASVS Spec' },
+      { id: 'SDD_PLAN', num: '4', title: 'SDD-PLAN', art: 'plan.md', desc: 'Traceable Decomposition' },
+      { id: 'SDD_DEV', num: '5', title: 'SDD-DEV', art: 'dev_log.md', desc: 'TDD Codegen & SAST' },
+      { id: 'POST_SDD', num: '6', title: 'POST-SDD', art: 'plan_corrections.md', desc: 'Self-Healing Loop (Max 3)' },
+      { id: 'AB_TEST', num: '7', title: 'A/B-TEST', art: 'test_log.md', desc: 'Equivalence & Seals' },
+    ];
+  }
+
+  async init() {
+    this.renderStageCards();
+    await this.loadPipelines();
+  }
+
+  renderStageCards() {
+    const track = document.getElementById('pipeline-stages-track');
+    if (!track) return;
+
+    track.innerHTML = '';
+    const currentStage = this.currentPipeline ? this.currentPipeline.current_stage : '';
+    const currentStatus = this.currentPipeline ? this.currentPipeline.status : '';
+
+    this.stages.forEach((st, idx) => {
+      const card = document.createElement('div');
+      card.className = 'stage-step-card';
+      card.id = `stage-card-${st.id}`;
+
+      let badgeHtml = '<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">PENDING</span>';
+      
+      const currentIdx = this.stages.findIndex(s => s.id === currentStage);
+      if (currentIdx !== -1) {
+        if (idx < currentIdx || (idx === currentIdx && currentStatus === 'COMPLETED')) {
+          card.classList.add('completed');
+          badgeHtml = '<span class="badge badge-green">COMPLETED ✓</span>';
+        } else if (idx === currentIdx) {
+          if (currentStatus === 'AWAITING_HUMAN') {
+            card.classList.add('awaiting');
+            badgeHtml = '<span class="badge" style="background:rgba(245,158,11,0.2); color:var(--amber);">AWAITING HITL ⚠️</span>';
+          } else if (currentStatus === 'RUNNING') {
+            card.classList.add('running');
+            badgeHtml = '<span class="badge badge-blue">RUNNING ⚡</span>';
+          } else {
+            card.classList.add('active');
+            badgeHtml = `<span class="badge badge-purple">${currentStatus}</span>`;
+          }
+        }
+      }
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:12px; color:#fff;">${st.num}. ${st.title}</span>
+          ${badgeHtml}
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${st.desc}</div>
+        <div style="font-size:10px; color:var(--cyan); font-family:var(--font-mono); margin-top:4px;">📄 ${st.art}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        this.selectStage(st);
+      });
+
+      track.appendChild(card);
+    });
+  }
+
+  selectStage(stage) {
+    this.switchSubtab('artifacts');
+    const select = document.getElementById('pipe-artifact-select');
+    if (select) {
+      select.value = stage.art;
+      this.loadArtifact(stage.art);
+    }
+  }
+
+  switchSubtab(subtabId) {
+    this.activeSubtab = subtabId;
+    document.querySelectorAll('.subtab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-pipe-subtab') === subtabId);
+    });
+    document.querySelectorAll('.pipe-subtab-pane').forEach(pane => {
+      pane.style.display = 'none';
+    });
+    const activePane = document.getElementById(`pipe-subtab-${subtabId}`);
+    if (activePane) activePane.style.display = 'block';
+
+    if (subtabId === 'artifacts') {
+      const select = document.getElementById('pipe-artifact-select');
+      if (select) this.loadArtifact(select.value);
+    } else if (subtabId === 'a2a') {
+      this.loadMessages();
+    } else if (subtabId === 'snapshots') {
+      this.renderSnapshots();
+    }
+  }
+
+  async loadPipelines() {
+    try {
+      const pipelines = await this.api.getPipelines();
+      const select = document.getElementById('pipe-select');
+      if (select) {
+        select.innerHTML = '<option value="">-- Выберите задачу / прогон --</option>';
+        pipelines.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.pipeline_id;
+          opt.textContent = `${p.pipeline_id} - ${p.project_name} [${p.current_stage}: ${p.status}]`;
+          if (p.pipeline_id === this.currentPipelineId) opt.selected = true;
+          select.appendChild(opt);
+        });
+
+        if (!this.currentPipelineId && pipelines.length > 0) {
+          this.currentPipelineId = pipelines[0].pipeline_id;
+          select.value = this.currentPipelineId;
+          await this.loadCurrentPipelineState();
+        } else if (this.currentPipelineId) {
+          await this.loadCurrentPipelineState();
+        }
+      }
+    } catch (err) {
+      console.error('loadPipelines error:', err);
+    }
+  }
+
+  async onSelect(pipeId) {
+    this.currentPipelineId = pipeId;
+    if (pipeId) {
+      await this.loadCurrentPipelineState();
+    } else {
+      this.currentPipeline = null;
+      this.updateControls();
+      this.renderStageCards();
+    }
+  }
+
+  async loadCurrentPipelineState() {
+    if (!this.currentPipelineId) return;
+    try {
+      const state = await this.api.getPipelineState(this.currentPipelineId);
+      this.currentPipeline = state;
+      this.updateControls();
+      this.renderStageCards();
+      this.renderMetrics();
+      this.checkHitlGate();
+      if (this.activeSubtab === 'artifacts') {
+        const select = document.getElementById('pipe-artifact-select');
+        if (select) this.loadArtifact(select.value);
+      } else if (this.activeSubtab === 'a2a') {
+        this.loadMessages();
+      } else if (this.activeSubtab === 'snapshots') {
+        this.renderSnapshots();
+      }
+    } catch (err) {
+      this.ui.showToast(`Ошибка загрузки состояния конвейера: ${err.message}`, 'error');
+    }
+  }
+
+  updateControls() {
+    const badge = document.getElementById('pipe-status-badge');
+    const btnStep = document.getElementById('btn-pipe-step');
+    const btnRun = document.getElementById('btn-pipe-run');
+
+    if (!this.currentPipeline) {
+      if (badge) {
+        badge.textContent = 'НЕТ АКТИВНОГО ПРОГОНА';
+        badge.className = 'badge badge-purple';
+      }
+      if (btnStep) btnStep.disabled = true;
+      if (btnRun) btnRun.disabled = true;
+      return;
+    }
+
+    const { status, current_stage } = this.currentPipeline;
+    if (badge) {
+      badge.textContent = `${current_stage} | ${status}`;
+      badge.className = status === 'COMPLETED' ? 'badge badge-green' :
+                        status === 'RUNNING' ? 'badge badge-blue' :
+                        status === 'AWAITING_HUMAN' ? 'badge' : 'badge badge-purple';
+      if (status === 'AWAITING_HUMAN') {
+        badge.style.background = 'rgba(245, 158, 11, 0.2)';
+        badge.style.color = 'var(--amber)';
+      } else {
+        badge.style.background = '';
+        badge.style.color = '';
+      }
+    }
+
+    const isIdle = status !== 'COMPLETED' && status !== 'FAILED' && status !== 'RUNNING';
+    if (btnStep) btnStep.disabled = !isIdle;
+    if (btnRun) btnRun.disabled = !isIdle || status === 'AWAITING_HUMAN';
+  }
+
+  renderMetrics() {
+    const box = document.getElementById('pipe-details-box');
+    if (!box || !this.currentPipeline) return;
+
+    const p = this.currentPipeline;
+    box.innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+          <span style="color:var(--text-dim); display:block; font-size:11px;">ID Конвейера:</span>
+          <span style="font-family:var(--font-mono); color:var(--cyan); font-weight:700;">${p.pipeline_id}</span>
+        </div>
+        <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+          <span style="color:var(--text-dim); display:block; font-size:11px;">Проект:</span>
+          <span style="font-weight:600; color:#fff;">${this.ui._escape(p.project_name)}</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+        <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+          <span style="color:var(--text-dim); display:block; font-size:11px;">Текущий этап:</span>
+          <span style="font-weight:700; color:var(--purple);">${p.current_stage}</span>
+        </div>
+        <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+          <span style="color:var(--text-dim); display:block; font-size:11px;">Итерация / Циклы:</span>
+          <span style="font-weight:700; color:#fff;">Iter ${p.current_iteration} (Loop ${p.loop_count}/3)</span>
+        </div>
+        <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+          <span style="color:var(--text-dim); display:block; font-size:11px;">A2A Сообщений:</span>
+          <span style="font-weight:700; color:var(--green);">${p.messages_count || 0} конвертов</span>
+        </div>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+        <span style="color:var(--text-dim); display:block; font-size:11px;">Хранилище артефактов:</span>
+        <span style="font-family:var(--font-mono); color:var(--text-muted); font-size:12px;">${this.ui._escape(p.storage_dir)}</span>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:6px;">
+        <span style="color:var(--text-dim); display:block; font-size:11px;">Входное намерение (Intent / Vibe):</span>
+        <div style="font-size:12px; color:#cbd5e1; margin-top:4px; max-height:100px; overflow-y:auto; white-space:pre-wrap;">${this.ui._escape(p.initial_idea || 'Авто-обнаружение из файлов')}</div>
+      </div>
+    `;
+  }
+
+  checkHitlGate() {
+    const banner = document.getElementById('pipe-hitl-banner');
+    if (!banner) return;
+
+    if (this.currentPipeline && this.currentPipeline.status === 'AWAITING_HUMAN' && this.currentPipeline.pending_gate) {
+      const gate = this.currentPipeline.pending_gate;
+      const titleEl = document.getElementById('hitl-banner-title');
+      const promptEl = document.getElementById('hitl-banner-prompt');
+      if (titleEl) titleEl.textContent = `Требуется решение инженера (Gate: ${gate.gate_type} на ${gate.stage})`;
+      if (promptEl) promptEl.textContent = gate.prompt || 'Требуется подтверждение для перехода на следующий этап.';
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  async onStartSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('pipe-input-name').value;
+    const path = document.getElementById('pipe-input-path').value;
+    const idea = document.getElementById('pipe-input-idea').value;
+    const hitl = document.getElementById('pipe-check-hitl').checked;
+
+    try {
+      this.ui.showToast('Инициализация конвейера B2B-Harness...', 'info');
+      const res = await this.api.startPipeline({
+        project_name: name,
+        input_path: path,
+        initial_idea: idea,
+        require_hitl_intent: hitl
+      });
+
+      this.currentPipelineId = res.pipeline_id;
+      this.currentPipeline = res.state;
+      this.ui.showToast(`Конвейер ${res.pipeline_id} успешно создан!`, 'success');
+      await this.loadPipelines();
+    } catch (err) {
+      this.ui.showToast(`Ошибка запуска: ${err.message}`, 'error');
+    }
+  }
+
+  async step() {
+    if (!this.currentPipelineId) return;
+    try {
+      this.ui.showToast('Выполнение шага конвейера...', 'info');
+      const res = await this.api.stepPipeline(this.currentPipelineId);
+      this.currentPipeline = res.state;
+      this.updateControls();
+      this.renderStageCards();
+      this.renderMetrics();
+      this.checkHitlGate();
+      this.ui.showToast(`Шаг выполнен: ${res.result.stage || 'OK'} (${res.result.status})`, 'success');
+    } catch (err) {
+      this.ui.showToast(`Ошибка выполнения шага: ${err.message}`, 'error');
+    }
+  }
+
+  async runAuto() {
+    if (!this.currentPipelineId) return;
+    try {
+      this.ui.showToast('Запущен 1-Click Auto-Run конвейера...', 'info');
+      const res = await this.api.runPipeline(this.currentPipelineId);
+      this.currentPipeline = res.state;
+      this.updateControls();
+      this.renderStageCards();
+      this.renderMetrics();
+      this.checkHitlGate();
+      this.ui.showToast(`Конвейер остановлен: статус ${res.state.status}`, res.state.status === 'COMPLETED' ? 'success' : 'info');
+    } catch (err) {
+      this.ui.showToast(`Ошибка авто-выполнения: ${err.message}`, 'error');
+    }
+  }
+
+  async resolveGate(decision) {
+    if (!this.currentPipelineId) return;
+    const clarifications = document.getElementById('hitl-input-clarifications').value;
+    try {
+      this.ui.showToast('Отправка решения в HITL Gate...', 'info');
+      const res = await this.api.resolvePipelineGate(this.currentPipelineId, {
+        decision: decision,
+        expert_name: 'Lead Architect',
+        expert_role: 'Spec Auditor',
+        rationale: 'Approved via Spec-Kit Cockpit',
+        clarifications: clarifications
+      });
+
+      this.currentPipeline = res.state;
+      this.updateControls();
+      this.renderStageCards();
+      this.renderMetrics();
+      this.checkHitlGate();
+      this.ui.showToast('HITL Gate утвержден, конвейер продолжен!', 'success');
+    } catch (err) {
+      this.ui.showToast(`Ошибка HITL: ${err.message}`, 'error');
+    }
+  }
+
+  async loadArtifact(name) {
+    if (!this.currentPipelineId || !name) return;
+    const viewer = document.getElementById('pipe-artifact-viewer');
+    if (!viewer) return;
+    viewer.textContent = 'Загрузка содержимого артефакта...';
+    try {
+      const art = await this.api.getPipelineArtifact(this.currentPipelineId, name);
+      viewer.textContent = art.content || 'Файл пуст или еще не сгенерирован.';
+    } catch (err) {
+      viewer.textContent = `Артефакт '${name}' еще не сгенерирован на текущем этапе конвейера.`;
+    }
+  }
+
+  copyArtifact() {
+    const viewer = document.getElementById('pipe-artifact-viewer');
+    if (!viewer) return;
+    navigator.clipboard.writeText(viewer.textContent)
+      .then(() => this.ui.showToast('Артефакт скопирован в буфер обмена!', 'success'))
+      .catch(() => this.ui.showToast('Не удалось скопировать', 'error'));
+  }
+
+  async loadMessages() {
+    if (!this.currentPipelineId) return;
+    const tbody = document.getElementById('pipe-messages-tbody');
+    if (!tbody) return;
+    try {
+      const msgs = await this.api.getPipelineMessages(this.currentPipelineId);
+      if (msgs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 24px;">Нет сообщений</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '';
+      msgs.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:var(--font-mono); font-size:11px; color:var(--cyan);">${this.ui._escape(m.trace_id)}</td>
+          <td><span class="badge badge-purple">${this.ui._escape(m.step_id)}</span></td>
+          <td>${m.iteration}</td>
+          <td><b style="color:#fff;">${this.ui._escape(m.sender_role)}</b></td>
+          <td>${this.ui._escape(m.recipient_role)}</td>
+          <td><span class="badge ${m.status === 'APPROVED' ? 'badge-green' : 'badge-blue'}">${this.ui._escape(m.status)}</span></td>
+          <td style="font-size:11px; color:var(--text-dim);">${this.ui._escape(m.timestamp)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="color:var(--rose); padding:16px;">Ошибка: ${err.message}</td></tr>`;
+    }
+  }
+
+  renderSnapshots() {
+    const tbody = document.getElementById('pipe-snapshots-tbody');
+    if (!tbody || !this.currentPipeline) return;
+    const snaps = this.currentPipeline.snapshots || [];
+    if (snaps.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 24px;">Нет снимков</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    snaps.forEach(s => {
+      const tr = document.createElement('tr');
+      const inStr = JSON.stringify(s.input_artifacts || {});
+      const outStr = JSON.stringify(s.output_artifacts || {});
+      tr.innerHTML = `
+        <td><span class="badge badge-purple">${this.ui._escape(s.stage)}</span></td>
+        <td>${s.iteration}</td>
+        <td><span class="badge ${s.status === 'COMPLETED' ? 'badge-green' : 'badge-blue'}">${this.ui._escape(s.status)}</span></td>
+        <td style="font-family:var(--font-mono); font-size:11px; max-width:200px; overflow:hidden; text-overflow:ellipsis;">${this.ui._escape(inStr)}</td>
+        <td style="font-family:var(--font-mono); font-size:11px; max-width:200px; overflow:hidden; text-overflow:ellipsis; color:var(--green);">${this.ui._escape(outStr)}</td>
+        <td style="color:var(--rose);">${this.ui._escape(s.error_message || '-')}</td>
+        <td style="font-size:11px; color:var(--text-dim);">${this.ui._escape(s.updated_at || s.created_at)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  showNewModal() {
+    this.switchSubtab('cockpit');
+    const inputName = document.getElementById('pipe-input-name');
+    if (inputName) inputName.focus();
+  }
+
+  async refresh() {
+    await this.loadPipelines();
+    this.ui.showToast('Состояние конвейера обновлено', 'info');
   }
 }
 

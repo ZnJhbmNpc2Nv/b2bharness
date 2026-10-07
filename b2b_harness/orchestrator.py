@@ -299,6 +299,78 @@ class B2BHarnessOrchestrator:
                 "messages_count": msg_count,
             }
 
+    def list_pipelines(self) -> List[Dict[str, Any]]:
+        """Retrieves summary list of all registered pipeline runs."""
+        with self._get_connection() as conn:
+            cur = conn.execute("SELECT * FROM pipeline_runs ORDER BY created_at DESC")
+            runs = []
+            for r in cur.fetchall():
+                runs.append({
+                    "pipeline_id": r["id"],
+                    "project_name": r["project_name"],
+                    "input_path": r["input_path"],
+                    "current_stage": r["current_stage"],
+                    "current_iteration": r["current_iteration"],
+                    "status": r["status"],
+                    "loop_count": r["loop_count"],
+                    "created_at": r["created_at"],
+                    "updated_at": r["updated_at"],
+                })
+            return runs
+
+    def get_a2a_messages(self, pipeline_id: str) -> List[Dict[str, Any]]:
+        """Retrieves all A2A message envelopes exchanged during the pipeline run."""
+        with self._get_connection() as conn:
+            cur = conn.execute(
+                "SELECT * FROM a2a_messages WHERE pipeline_id = ? ORDER BY id ASC",
+                (pipeline_id,),
+            )
+            messages = []
+            for m in cur.fetchall():
+                payload_val = {}
+                if m["payload"]:
+                    try:
+                        payload_val = json.loads(m["payload"])
+                    except Exception:
+                        payload_val = {"raw": m["payload"]}
+
+                sender_meta = {}
+                if m["sender_metadata"]:
+                    try:
+                        sender_meta = json.loads(m["sender_metadata"])
+                    except Exception:
+                        sender_meta = {}
+
+                messages.append({
+                    "id": m["id"],
+                    "trace_id": m["trace_id"],
+                    "step_id": m["step_id"],
+                    "iteration": m["iteration"],
+                    "sender_role": m["sender_role"],
+                    "sender_metadata": sender_meta,
+                    "recipient_role": m["recipient_role"],
+                    "payload": payload_val,
+                    "status": m["status"],
+                    "timestamp": m["timestamp"],
+                })
+            return messages
+
+    def list_artifacts(self, pipeline_id: str) -> List[str]:
+        """Lists filenames of all generated artifacts for the specified pipeline."""
+        storage_dir = os.path.join(self.storage_root, pipeline_id)
+        if not os.path.exists(storage_dir):
+            return []
+        return sorted([f for f in os.listdir(storage_dir) if os.path.isfile(os.path.join(storage_dir, f))])
+
+    def get_artifact(self, pipeline_id: str, artifact_name: str) -> Optional[str]:
+        """Reads contents of a generated artifact file with directory traversal protection."""
+        clean_name = os.path.basename(artifact_name)
+        file_path = os.path.join(self.storage_root, pipeline_id, clean_name)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                return f.read()
+        return None
+
     def _record_a2a_envelope(self, conn: sqlite3.Connection, pipeline_id: str, envelope: A2AEnvelope):
         """Persists an A2A message envelope into the transactional ledger."""
         conn.execute(
